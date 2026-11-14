@@ -209,6 +209,7 @@ function CmoView({ sim }: { sim: MissionSim }) {
         </div>
       </Panel>
 
+      <AvatarExplorer sim={sim} />
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Diagnóstico diferencial asistido (IA)" icon={<ClipboardList className="size-3.5 text-hmi" />}>
           <ul className="grid gap-2">
@@ -233,9 +234,7 @@ function CmoView({ sim }: { sim: MissionSim }) {
           )}
         </Panel>
       </div>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <AvatarExplorer sim={sim} />
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
         <Panel title="Inventario médico a bordo" icon={<Boxes className="size-3.5 text-hmi" />}>
           <ul className="grid gap-1.5 text-sm">
             {INVENTORY.map((i) => {
@@ -254,8 +253,8 @@ function CmoView({ sim }: { sim: MissionSim }) {
             })}
           </ul>
         </Panel>
+        <TrendPanel scenario={sim.scenario} title="Tendencias clínicas" />
       </div>
-      <TrendPanel scenario={sim.scenario} title="Tendencias clínicas" />
     </div>
   );
 }

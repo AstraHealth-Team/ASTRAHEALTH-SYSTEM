@@ -34,7 +34,7 @@ export function SensorsBlock({ sim }: { sim: MissionSim }) {
   const v = sim.vitals;
   const drain = (start: number, rate: number) => Math.max(5, Math.round(start - sim.tick * rate));
   return (
-    <BlockFrame block="sensors" aside={<span className="telemetry text-[0.7rem] text-muted-foreground">PHD · 11073-20601</span>}>
+    <BlockFrame block="sensors">
       <div className="grid gap-2.5">
         <Node title="CSA Bio-Monitor" sub="(ECG, PA, HRV)" right={<span className="telemetry text-sm text-foreground">{v.hr} bpm</span>}>
           <Device name="Astroskin (camiseta)" pct={drain(86, 0.01)} cert />

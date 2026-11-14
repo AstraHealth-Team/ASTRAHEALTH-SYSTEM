@@ -109,7 +109,7 @@ function Diagram({ sim }: { sim: MissionSim }) {
               )}
               <rect x={n.x} y={n.y} width={n.w} height={n.h} style={{ stroke: `var(--${b})`, fill: `color-mix(in oklab, var(--${b}) ${on ? 16 : 6}%, transparent)` }} strokeWidth="1.8" />
               {n.lines.map((l, i) => (
-                <text key={i} x={n.x + n.w / 2} y={startY + i * lh} textAnchor="middle" className="font-mono text-[15px]" style={{ fill: `var(--${b})` }}>
+                <text key={i} x={n.x + n.w / 2} y={startY + i * lh} textAnchor="middle" className="font-mono text-[14px]" style={{ fill: `var(--${b})` }}>
                   {l}
                 </text>
               ))}
