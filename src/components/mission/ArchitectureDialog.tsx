@@ -91,11 +91,9 @@ function Diagram({ sim }: { sim: MissionSim }) {
       {PATHS.map((p, i) => (
         <g key={i}>
           <path d={p.d} className="fill-none stroke-foreground/80" strokeWidth="1.5" markerEnd="url(#arrow)" />
-          {!(p.from === "dtn" && i === 5 && !sim.link.realtime && false) && (
-            <circle r="4" style={{ fill: `var(--${p.from})` }}>
-              <animateMotion dur={`${p.from === "dtn" && sim.link.localAutonomy ? 3.6 : 1.8}s`} begin={`${(i % 4) * 0.35}s`} repeatCount="indefinite" path={p.d} />
-            </circle>
-          )}
+          <circle r="4" style={{ fill: `var(--${p.from})` }}>
+            <animateMotion dur={`${p.from === "dtn" && sim.link.localAutonomy ? 3.6 : 1.8}s`} begin={`${(i % 4) * 0.35}s`} repeatCount="indefinite" path={p.d} />
+          </circle>
         </g>
       ))}
 
