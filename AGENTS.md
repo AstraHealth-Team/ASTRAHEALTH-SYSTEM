@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- Mission rules (latency per profile, scenario vitals, alert levels, Caution/Advisory suppression) live as pure functions in `src/lib/mission.ts` with tests in `src/lib/mission.test.ts`; UI only renders them — keeps NASA-STD-3001 behavior testable.
+- Live simulation state comes from one `useMissionSim` hook passed down as `sim`; no global store — the prototype has a single page.
+- The dashboard and the architecture modal are organized by the 4 official architecture blocks (`BLOCKS` in `src/components/mission/kit.tsx`, colors as `--sensors/--dtn/--edge/--hmi` tokens); new panels must belong to one block.
