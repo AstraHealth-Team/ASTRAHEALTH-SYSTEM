@@ -103,7 +103,7 @@ export function BodyAvatar({
               className={cn(STROKE[level], active ? "opacity-90" : "opacity-40")}
               strokeWidth="1"
             />
-            <circle cx={h.cx} cy={h.cy} r={h.r + 8} className={cn(FILL[level], "animate-soft-pulse")} style={{ transformOrigin: `${h.cx}px ${h.cy}px`, transformBox: "view-box" }} opacity="0.35" />
+            <circle cx={h.cx} cy={h.cy} r={h.r + 8} className={cn(FILL[level], "animate-soft-pulse")} style={{ transformOrigin: "center", transformBox: "fill-box" }} opacity="0.35" />
             <circle cx={h.cx} cy={h.cy} r={h.r} className={cn(FILL[level], level === "emergency" && "animate-emergency")} opacity="0.9" />
             <circle className="ring fill-none" cx={h.cx} cy={h.cy} r={h.r + 4} stroke="transparent" strokeWidth="2" />
             {active && <circle cx={h.cx} cy={h.cy} r={h.r + 4} className="fill-none stroke-foreground" strokeWidth="2" />}
