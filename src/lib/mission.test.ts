@@ -46,7 +46,7 @@ describe("operational scenarios", () => {
 
   it("solar storm above 150 mSv/h raises an EMERGENCY", () => {
     const alerts = buildAlerts(SCENARIOS.spe.vitals, leo);
-    expect(alerts[0].level).toBe("emergency");
+    expect(alerts[0]?.level).toBe("emergency");
     expect(systemLevel("radiation", SCENARIOS.spe.vitals)).toBe("emergency");
   });
 });

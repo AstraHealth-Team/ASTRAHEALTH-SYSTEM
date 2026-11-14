@@ -44,7 +44,7 @@ export function SimulatorBar({ sim }: { sim: MissionSim }) {
               max={2}
               step={1}
               value={[idx]}
-              onValueChange={([v]) => sim.setProfile(PROFILES[v])}
+              onValueChange={([v]) => sim.setProfile(PROFILES[v ?? 0] ?? "leo")}
               aria-label="Perfil de misión"
               className="py-3"
             />
@@ -84,7 +84,7 @@ export function SimulatorBar({ sim }: { sim: MissionSim }) {
               max={MARS_LATENCY_MAX}
               step={1}
               value={[sim.marsMinutes]}
-              onValueChange={([v]) => sim.setMarsMinutes(v)}
+              onValueChange={([v]) => sim.setMarsMinutes(v ?? 12)}
               aria-label="Latencia a Marte en minutos"
             />
           </div>
