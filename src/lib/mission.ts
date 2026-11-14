@@ -407,7 +407,7 @@ export interface ComparisonRow {
   unit: string;
   earth: string;
   space: string;
-  flag?: HealthLevel;
+  flag?: HealthLevel | undefined;
 }
 
 export function systemComparison(system: SystemId, v: Vitals): ComparisonRow[] {
