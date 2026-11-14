@@ -16,6 +16,7 @@ import {
   OVERALL_LABEL,
   SCENARIOS,
   formatRate,
+  type ScenarioId,
   type SystemId,
 } from "@/lib/mission";
 import type { MissionSim } from "@/hooks/use-mission-sim";
@@ -160,7 +161,7 @@ function AstronautView({ sim }: { sim: MissionSim }) {
   );
 }
 
-const DIFFERENTIAL: Record<string, { dx: string; p: number }[]> = {
+const DIFFERENTIAL: Record<ScenarioId, { dx: string; p: number }[]> = {
   nominal: [
     { dx: "Ritmo sinusal normal", p: 0.98 },
     { dx: "Arritmia sinusal respiratoria", p: 0.02 },
