@@ -523,7 +523,7 @@ function seeded(n: number) {
 export function trendSeries(range: TrendRange, scenario: ScenarioId) {
   const points = range === "1h" ? 30 : range === "24h" ? 48 : 30;
   const v = SCENARIOS[scenario].vitals;
-  const out: { t: string; hr: number; hrv: number; dose: number }[] = [];
+  const out: { t: string; hr: number; rnfl: number; dose: number }[] = [];
   for (let i = 0; i < points; i++) {
     const p = i / (points - 1);
     const n = seeded(i + (range === "1h" ? 1 : range === "24h" ? 101 : 301));
@@ -532,14 +532,18 @@ export function trendSeries(range: TrendRange, scenario: ScenarioId) {
     else if (range === "24h") label = `${String(Math.floor(p * 23.5)).padStart(2, "0")}h`;
     else label = `D${i + 1}`;
 
-    // Acute scenarios only affect the most recent part of short ranges
-    const acute = range !== "30d" && p > 0.8 ? (p - 0.8) / 0.2 : 0;
+    const acute = p > 0.8 ? (p - 0.8) / 0.2 : 0;
     const baseHr = NOMINAL_VITALS.hr + Math.sin(p * Math.PI * 2) * 5 + (n - 0.5) * 4;
     const hr = baseHr + (v.hr - NOMINAL_VITALS.hr) * acute;
-    const hrv = NOMINAL_VITALS.hrv - Math.sin(p * Math.PI * 2) * 4 + (n - 0.5) * 5 + (v.hrv - NOMINAL_VITALS.hrv) * acute;
+    const rnflBaseline =
+      range === "30d"
+        ? EARTH_BASELINE.rnfl + p * (NOMINAL_VITALS.rnfl - EARTH_BASELINE.rnfl)
+        : NOMINAL_VITALS.rnfl;
+    const baseRnfl = rnflBaseline + Math.sin(p * Math.PI * 2) * 0.8 + (n - 0.5) * 0.6;
+    const rnfl = baseRnfl + (v.rnfl - NOMINAL_VITALS.rnfl) * acute;
     const doseBase = range === "30d" ? 30 + p * 12.6 : NOMINAL_VITALS.cumDoseMSv - (1 - p) * (range === "1h" ? 0.02 : 0.4);
     const dose = doseBase + (v.cumDoseMSv - NOMINAL_VITALS.cumDoseMSv) * acute;
-    out.push({ t: label, hr: Math.round(hr), hrv: Math.round(hrv), dose: Number(dose.toFixed(2)) });
+    out.push({ t: label, hr: Math.round(hr), rnfl: Number(rnfl.toFixed(1)), dose: Number(dose.toFixed(2)) });
   }
   return out;
 }

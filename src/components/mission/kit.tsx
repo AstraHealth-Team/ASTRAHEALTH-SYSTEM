@@ -16,27 +16,31 @@ export function BlockFrame({
   block,
   children,
   aside,
+  hideHeader,
   className,
 }: {
   block: BlockKey;
   children: ReactNode;
   aside?: ReactNode;
+  hideHeader?: boolean;
   className?: string;
 }) {
   const b = BLOCKS[block];
   return (
     <section className={cn(b.cls, "block-frame p-4 sm:p-5", className)} aria-label={`${b.n}. ${b.title}`}>
-      <header className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="label-caps flex items-center gap-2 text-foreground">
-          <span className="grid size-6 place-items-center rounded-md bg-block text-[0.7rem] font-bold text-background">
-            {b.n}
-          </span>
-          <span className="text-block">
-            {b.n}. {b.title}
-          </span>
-        </h2>
-        {aside}
-      </header>
+      {!hideHeader && (
+        <header className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="label-caps flex items-center gap-2 text-foreground">
+            <span className="grid size-6 place-items-center rounded-md bg-block text-[0.7rem] font-bold text-background">
+              {b.n}
+            </span>
+            <span className="text-block">
+              {b.n}. {b.title}
+            </span>
+          </h2>
+          {aside}
+        </header>
+      )}
       {children}
     </section>
   );

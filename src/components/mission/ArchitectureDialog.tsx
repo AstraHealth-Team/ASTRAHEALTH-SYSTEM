@@ -12,7 +12,7 @@ type Box = { x: number; y: number; w: number; h: number; lines: string[]; id: st
 const FRAMES: { block: BlockKey; x: number; y: number; w: number; h: number; title: string }[] = [
   { block: "sensors", x: 8, y: 8, w: 289, h: 460, title: "1. SENSORES (IEEE 11073)" },
   { block: "dtn", x: 328, y: 160, w: 465, h: 155, title: "2. RED ESPACIAL (DTN)" },
-  { block: "edge", x: 850, y: 181, w: 668, h: 114, title: "3. EDGE AI + FHIR R4" },
+  { block: "edge", x: 850, y: 181, w: 668, h: 114, title: "3. EDGE AI → HL7 FHIR R4" },
   { block: "hmi", x: 1552, y: 52, w: 360, h: 371, title: "4. INTERFAZ HMI (NASA-STD-3001)" },
 ];
 
@@ -71,7 +71,7 @@ function activeNodes(sim: MissionSim): Set<string> {
 function Diagram({ sim }: { sim: MissionSim }) {
   const active = activeNodes(sim);
   return (
-    <svg viewBox="0 0 1920 476" className="h-auto w-full min-w-[960px]" role="img" aria-label="Diagrama de arquitectura oficial: Sensores, Red DTN, Edge AI + FHIR R4, Interfaz HMI">
+    <svg viewBox="0 0 1920 476" className="h-auto w-full min-w-[960px]" role="img" aria-label="Flujo de arquitectura: IEEE 11073 → DTN → Edge AI y HL7 FHIR R4 → Interfaz HMI">
       <defs>
         <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
           <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--foreground)" strokeWidth="1.6" />
@@ -248,7 +248,7 @@ export function ArchitectureDialog({ open, onOpenChange, sim }: { open: boolean;
         <DialogHeader>
           <DialogTitle className="text-xl">Arquitectura técnica · flujo de datos en tiempo real</DialogTitle>
           <DialogDescription>
-            Diagrama oficial: Sensores IEEE 11073 → Red Espacial DTN → Edge AI + FHIR R4 → Interfaz HMI NASA-STD-3001.
+            Flujo completo: Sensores IEEE 11073 → Red Espacial DTN → Edge AI y HL7 FHIR R4 → Interfaz HMI NASA-STD-3001.
           </DialogDescription>
         </DialogHeader>
 

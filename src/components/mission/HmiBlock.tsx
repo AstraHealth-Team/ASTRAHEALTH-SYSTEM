@@ -28,12 +28,6 @@ import { SystemDetail } from "./SystemDetail";
 import { TrendPanel } from "./TrendPanel";
 import { WaveCanvas } from "./WaveCanvas";
 
-const MODE_NODES = [
-  { id: "astronaut", title: "Modo Astronauta", sub: "(Semáforo + Gamificación)" },
-  { id: "cmo", title: "Modo CMO", sub: "(Ondas + Guía EVA)" },
-  { id: "surgeon", title: "Modo Cirujano MCC", sub: "(Tendencias + LSAH)" },
-] as const;
-
 const PLAIN: Record<string, string> = {
   nominal: "Todo está en orden. Puedes seguir tu rutina.",
   caution: "Hay un valor que estamos vigilando. No necesitas hacer nada aún.",
@@ -157,6 +151,7 @@ function AstronautView({ sim }: { sim: MissionSim }) {
 
       <AvatarExplorer sim={sim} />
       <Countermeasures sim={sim} />
+      <TrendPanel scenario={sim.scenario} title="Tendencias Fisiológicas Dinámicas" />
     </div>
   );
 }
@@ -316,30 +311,7 @@ function SurgeonView({ sim }: { sim: MissionSim }) {
 
 export function HmiBlock({ sim }: { sim: MissionSim }) {
   return (
-    <BlockFrame
-      block="hmi"
-      aside={
-        <div className="hidden flex-wrap gap-1.5 md:flex">
-          {MODE_NODES.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => sim.setView(m.id)}
-              className={cn(
-                "node-box px-2.5 py-1 text-left transition-opacity",
-                sim.view === m.id ? "opacity-100" : "opacity-45 hover:opacity-80",
-              )}
-            >
-              <span className="telemetry block text-xs font-semibold">{m.title}</span>
-              <span className="telemetry block text-[0.62rem] opacity-80">{m.sub}</span>
-            </button>
-          ))}
-          <span className="node-box px-2.5 py-1">
-            <span className="telemetry block text-xs font-semibold">Alertas Duales</span>
-            <span className="telemetry block text-[0.62rem] opacity-80">(Emergency / Warning)</span>
-          </span>
-        </div>
-      }
-    >
+    <BlockFrame block="hmi" hideHeader>
       <div className="grid gap-4">
         <AlertStack alerts={sim.alerts} suppressed={sim.suppressed} criticalPhase={sim.criticalPhase} />
         <div key={sim.view} className="animate-in fade-in duration-300">

@@ -6,6 +6,7 @@ import {
   getLinkState,
   overallLevel,
   systemLevel,
+  trendSeries,
 } from "./mission";
 
 describe("mission latency profiles", () => {
@@ -71,5 +72,22 @@ describe("contextual alert suppression", () => {
   it("without critical phase or emergency, advisories are shown", () => {
     const { visible } = filterAlerts(buildAlerts(SCENARIOS.nominal.vitals, mars), { criticalPhase: false });
     expect(visible.some((a) => a.level === "advisory")).toBe(true);
+  });
+});
+
+describe("physiological trend series", () => {
+  it.each(["1h", "24h", "30d"] as const)("includes RNFL and reflects the active scenario at %s", (range) => {
+    const nominal = trendSeries(range, "nominal").at(-1)!;
+    const eva = trendSeries(range, "eva").at(-1)!;
+    const spe = trendSeries(range, "spe").at(-1)!;
+
+    expect(eva.hr - nominal.hr).toBe(SCENARIOS.eva.vitals.hr - SCENARIOS.nominal.vitals.hr);
+    expect(eva.rnfl).toBeDefined();
+    expect(eva.rnfl - nominal.rnfl).toBe(SCENARIOS.eva.vitals.rnfl - SCENARIOS.nominal.vitals.rnfl);
+    expect(spe.dose - nominal.dose).toBeCloseTo(SCENARIOS.spe.vitals.cumDoseMSv - SCENARIOS.nominal.vitals.cumDoseMSv);
+
+    if (range === "30d") {
+      expect(nominal.rnfl).toBeGreaterThan(trendSeries(range, "nominal")[0].rnfl);
+    }
   });
 });

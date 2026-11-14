@@ -12,18 +12,17 @@ const RANGES: { id: TrendRange; label: string }[] = [
 ];
 
 const METRICS = [
-  { key: "hr", label: "FC (bpm)", color: "var(--sensors)" },
-  { key: "hrv", label: "HRV (ms)", color: "var(--edge)" },
-  { key: "dose", label: "Dosis (mSv)", color: "var(--hmi)" },
+  { key: "hr", label: "Frecuencia cardíaca (bpm)", color: "var(--sensors)", axis: "hr" },
+  { key: "rnfl", label: "Espesor retiniano SANS (RNFL, µm)", color: "var(--edge)", axis: "rnfl" },
+  { key: "dose", label: "Dosis de radiación acumulada (mSv)", color: "var(--hmi)", axis: "dose" },
 ] as const;
 
 type MetricKey = (typeof METRICS)[number]["key"];
 
 export function TrendPanel({ scenario, title = "Tendencias" }: { scenario: ScenarioId; title?: string }) {
   const [range, setRange] = useState<TrendRange>("24h");
-  const [metric, setMetric] = useState<MetricKey>("hr");
+  const [visibleMetrics, setVisibleMetrics] = useState<MetricKey[]>(() => METRICS.map(({ key }) => key));
   const data = useMemo(() => trendSeries(range, scenario), [range, scenario]);
-  const m = METRICS.find((x) => x.key === metric)!;
   return (
     <Panel
       title={title}
@@ -51,28 +50,55 @@ export function TrendPanel({ scenario, title = "Tendencias" }: { scenario: Scena
         {METRICS.map((x) => (
           <button
             key={x.key}
-            onClick={() => setMetric(x.key)}
+            aria-pressed={visibleMetrics.includes(x.key)}
+            onClick={() =>
+              setVisibleMetrics((current) =>
+                current.includes(x.key)
+                  ? current.length > 1
+                    ? current.filter((key) => key !== x.key)
+                    : current
+                  : [...current, x.key],
+              )
+            }
             className={cn(
               "flex min-h-8 items-center gap-1.5 rounded-md border px-2.5 text-xs transition-colors",
-              metric === x.key ? "border-foreground/40 bg-accent text-foreground" : "border-border text-muted-foreground hover:text-foreground",
+              visibleMetrics.includes(x.key)
+                ? "border-foreground/40 bg-accent text-foreground"
+                : "border-border text-muted-foreground hover:text-foreground",
             )}
           >
-            <span className="size-2 rounded-full" style={{ background: x.color }} />
+            <span className="size-2 shrink-0 rounded-full" style={{ background: x.color }} />
             {x.label}
           </button>
         ))}
       </div>
-      <div className="h-52">
+      <p className="mb-1 text-[0.68rem] text-muted-foreground">Escalas independientes: bpm · µm · mSv</p>
+      <div className="h-60">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 6, right: 8, bottom: 0, left: -18 }}>
             <CartesianGrid stroke="var(--hairline)" vertical={false} />
             <XAxis dataKey="t" tick={{ fill: "var(--muted-foreground)", fontSize: 10 }} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={24} />
-            <YAxis tick={{ fill: "var(--muted-foreground)", fontSize: 10 }} tickLine={false} axisLine={false} domain={["auto", "auto"]} />
+            <YAxis yAxisId="hr" tick={{ fill: "var(--sensors)", fontSize: 10 }} tickLine={false} axisLine={false} domain={["auto", "auto"]} />
+            <YAxis yAxisId="rnfl" orientation="right" width={38} tick={{ fill: "var(--edge)", fontSize: 10 }} tickLine={false} axisLine={false} domain={["auto", "auto"]} />
+            <YAxis yAxisId="dose" orientation="right" width={42} offset={38} tick={{ fill: "var(--hmi)", fontSize: 10 }} tickLine={false} axisLine={false} domain={["auto", "auto"]} />
             <Tooltip
               contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
               labelStyle={{ color: "var(--muted-foreground)" }}
             />
-            <Line type="monotone" dataKey={metric} name={m.label} stroke={m.color} strokeWidth={2} dot={false} isAnimationActive animationDuration={600} />
+            {METRICS.filter(({ key }) => visibleMetrics.includes(key)).map((m) => (
+              <Line
+                key={m.key}
+                type="monotone"
+                dataKey={m.key}
+                name={m.label}
+                yAxisId={m.axis}
+                stroke={m.color}
+                strokeWidth={2}
+                dot={false}
+                isAnimationActive
+                animationDuration={600}
+              />
+            ))}
           </LineChart>
         </ResponsiveContainer>
       </div>
