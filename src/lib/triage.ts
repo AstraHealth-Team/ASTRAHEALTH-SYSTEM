@@ -122,7 +122,7 @@ function findTerm(norm: string, term: string): number {
   // whole-word start match
   const re = new RegExp(`(^|\\s)${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`);
   const m = re.exec(norm);
-  return m ? m.index + m[1].length : -1;
+  return m ? m.index + (m[1] ?? "").length : -1;
 }
 
 /** Physiological floor per system from the live vitals */
@@ -279,7 +279,8 @@ export function diagnosisSummary(state: TriageState): string {
     (s) => `${TRIAGE_META[s].title} en ${state[s].level === "red" ? "rojo" : "amarillo"}, por ${state[s].finding.toLowerCase()}`,
   );
   const worst = worstLevel(state);
-  const first = RECOMMENDATIONS[affected.sort((a, b) => TRIAGE_RANK[state[b].level] - TRIAGE_RANK[state[a].level])[0]][worst][0];
+  const top = [...affected].sort((a, b) => TRIAGE_RANK[state[b].level] - TRIAGE_RANK[state[a].level])[0] ?? "neuro";
+  const first = RECOMMENDATIONS[top][worst][0] ?? "";
   return `Diagnóstico preliminar: ${parts.join("; ")}. ${worst === "red" ? "Es urgente." : "Requiere vigilancia."} Primera acción: ${first} Revisa la consola de notificaciones para el protocolo completo.`;
 }
 

@@ -123,7 +123,7 @@ export function useVoiceAssistant({ triage, vitals }: { triage: Triage; vitals: 
         an.getByteTimeDomainData(buf);
         let sum = 0;
         for (let i = 0; i < buf.length; i++) {
-          const v = (buf[i] - 128) / 128;
+          const v = ((buf[i] ?? 128) - 128) / 128;
           sum += v * v;
         }
         target = Math.min(1, Math.sqrt(sum / buf.length) * 5);
@@ -247,6 +247,7 @@ export function useVoiceAssistant({ triage, vitals }: { triage: Triage; vitals: 
       let final = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const r = e.results[i];
+        if (!r) continue;
         if (r.isFinal) final += r[0].transcript;
         else live += r[0].transcript;
       }
@@ -338,7 +339,7 @@ export function useVoiceAssistant({ triage, vitals }: { triage: Triage; vitals: 
     if (next < TRIAGE_QUESTIONS.length) {
       stepRef.current = next;
       setStep(next);
-      await speak(external ?? `${ack} ${TRIAGE_QUESTIONS[next].text}`);
+      await speak(external ?? `${ack} ${TRIAGE_QUESTIONS[next]?.text ?? ""}`);
       listen(token);
     } else {
       await speak(external ?? `${ack} ${diagnosisSummary(merged)}`);
@@ -368,7 +369,7 @@ export function useVoiceAssistant({ triage, vitals }: { triage: Triage; vitals: 
     const tele = flagged.length
       ? ` La telemetría ya marca alerta en el sistema ${flagged.map((s) => TRIAGE_META[s].title.toLowerCase()).join(" y ")}.`
       : "";
-    await speak(`Hola, soy ASTRA, tu asistente médico a bordo. Necesito hacerte preguntas para tu diagnóstico.${tele} ${TRIAGE_QUESTIONS[0].text}`);
+    await speak(`Hola, soy ASTRA, tu asistente médico a bordo. Necesito hacerte preguntas para tu diagnóstico.${tele} ${TRIAGE_QUESTIONS[0]?.text ?? ""}`);
     listen(token);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

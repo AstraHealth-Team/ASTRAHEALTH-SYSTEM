@@ -28,6 +28,7 @@ const SHORT: Record<SystemId, string> = {
   cardio: "Cardiovascular",
   radiation: "Radiación",
   msk: "Sueño · MSK",
+  resp: "Respiratorio",
 };
 
 export function BodyAvatar({
