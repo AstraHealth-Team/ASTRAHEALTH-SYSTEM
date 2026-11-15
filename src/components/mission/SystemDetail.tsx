@@ -4,7 +4,8 @@ import { LEVEL_SOFT, LEVEL_TEXT, LevelIcon } from "./kit";
 
 const NOTES: Record<SystemId, string> = {
   cardio: "En 0g ~1.8 L de fluido se desplazan hacia la cabeza (cefalización), elevando el volumen sistólico inicial y reduciendo la HRV.",
-  neuro: "SANS: edema del disco óptico y pliegues coroideos. Se vigila hiperopía ≥ +0.75 D con OCT y tonometría a bordo.",
+  resp: "En 0g el diafragma se desplaza en dirección cefálica y la ventilación se redistribuye; el CO2 de cabina (ECLSS) y del traje EMU son la principal amenaza respiratoria.",
+  neuro: "Conciencia y orientación (AVPU/GCS) más SANS: edema del disco óptico y pliegues coroideos. Se vigila hiperopía ≥ +0.75 D con OCT y tonometría a bordo.",
   radiation: "Integración ISS-RAD (partículas cargadas), Radi-N2 (burbujas) y CANS (espectrómetro canadiense de neutrones).",
   msk: "Pérdida ósea de 1–1.5 %/mes en zonas de carga. El ejercicio ARED/T2 y el sueño regulan la recuperación cognitiva.",
 };

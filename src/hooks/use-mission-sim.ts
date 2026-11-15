@@ -11,6 +11,7 @@ import {
   type Vitals,
   type ViewMode,
 } from "@/lib/mission";
+import { useTriage } from "./use-triage";
 
 export interface DtnStats {
   generated: number;
@@ -98,6 +99,7 @@ export function useMissionSim() {
   );
   const level = overallLevel(visible);
   const xai = useMemo(() => explain(scenario, baseVitals), [scenario, baseVitals]);
+  const triage = useTriage(scenario, baseVitals);
 
   return {
     profile,
@@ -120,6 +122,7 @@ export function useMissionSim() {
     xai,
     counter,
     setCounter,
+    triage,
   };
 }
 

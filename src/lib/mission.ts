@@ -8,7 +8,7 @@ export type ScenarioId = "nominal" | "eva" | "spe";
 export type AlertLevel = "emergency" | "warning" | "caution" | "advisory";
 export type HealthLevel = AlertLevel | "nominal";
 export type ViewMode = "astronaut" | "cmo" | "surgeon";
-export type SystemId = "cardio" | "neuro" | "radiation" | "msk";
+export type SystemId = "cardio" | "neuro" | "resp" | "radiation" | "msk";
 
 export const ALERT_PRIORITY: Record<AlertLevel, number> = {
   emergency: 0,
@@ -392,12 +392,17 @@ export function systemLevel(system: SystemId, v: Vitals): HealthLevel {
     case "msk":
       if (v.sleepEff < 75 || v.boneLossPct > 1.5) return "caution";
       return "nominal";
+    case "resp":
+      if (v.spo2 < 90) return "emergency";
+      if (v.spo2 < 94 || v.rr > 22 || v.co2 > 3) return "caution";
+      return "nominal";
   }
 }
 
 export const SYSTEM_META: Record<SystemId, { title: string; subtitle: string }> = {
-  cardio: { title: "Cardiovascular", subtitle: "FC · PA · HRV · cefalización" },
-  neuro: { title: "Neuro-Ocular (SANS)", subtitle: "RNFL · PIO · hiperopía" },
+  cardio: { title: "Cardiaco", subtitle: "FC · PA · HRV · cefalización" },
+  neuro: { title: "Neurológico", subtitle: "Conciencia · SANS · RNFL · PIO" },
+  resp: { title: "Respiratorio", subtitle: "SpO2 · FR · ppCO2 · O2 del traje" },
   radiation: { title: "Radiación Ionizante", subtitle: "ISS-RAD · Radi-N2 · CANS" },
   msk: { title: "Sueño, Cognición y Musculoesquelético", subtitle: "Sueño · fatiga · DMO" },
 };
@@ -427,6 +432,13 @@ export function systemComparison(system: SystemId, v: Vitals): ComparisonRow[] {
         { label: "Presión intraocular", unit: "mmHg", earth: `${e.iop}`, space: `${v.iop}`, flag: v.iop > 21 ? "caution" : undefined },
         { label: "Desplazamiento hiperópico", unit: "D", earth: "+0.00", space: `+${v.refractiveShiftD.toFixed(2)}`, flag: v.refractiveShiftD >= 0.75 ? "warning" : v.refractiveShiftD >= 0.5 ? "caution" : undefined },
         { label: "Umbral SANS", unit: "D", earth: "—", space: "≥ +0.75" },
+      ];
+    case "resp":
+      return [
+        { label: "Saturación O2 (SpO2)", unit: "%", earth: `${e.spo2}`, space: `${v.spo2}`, flag: v.spo2 < 90 ? "emergency" : v.spo2 < 94 ? "caution" : undefined },
+        { label: "Frecuencia respiratoria", unit: "/min", earth: `${e.rr}`, space: `${v.rr}`, flag: v.rr > 22 ? "caution" : undefined },
+        { label: "ppCO2 cabina", unit: "mmHg", earth: `${e.co2}`, space: v.co2.toFixed(1), flag: v.co2 > 3 ? "caution" : undefined },
+        { label: "O2 del traje (EMU)", unit: "%", earth: "100", space: `${v.suitO2}`, flag: v.suitO2 < 80 ? "warning" : undefined },
       ];
     case "radiation":
       return [

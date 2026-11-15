@@ -72,6 +72,13 @@
   --color-advisory: var(--advisory);
   --color-nominal: var(--nominal);
 
+  /* Voice assistant (HMI block) */
+  --color-voice: var(--voice);
+  --color-voice-foreground: var(--voice-foreground);
+  --color-voice-glow: var(--voice-glow);
+  --color-voice-mist: var(--voice-mist);
+  --color-voice-deep: var(--voice-deep);
+
   --color-panel: var(--panel);
   --color-panel-strong: var(--panel-strong);
   --color-hairline: var(--hairline);
@@ -109,6 +116,24 @@
   --caution: oklch(0.795 0.162 86); /* #EAB308 */
   --advisory: oklch(0.715 0.126 215.2); /* #06B6D4 */
   --nominal: oklch(0.723 0.192 149.6); /* #22C55E */
+
+  --voice: oklch(0.6 0.2 262); /* vibrant blue action / orb core */
+  --voice-foreground: oklch(0.99 0.004 260);
+  --voice-glow: oklch(0.8 0.1 258);
+  --voice-mist: oklch(0.97 0.018 265);
+  --voice-deep: oklch(0.34 0.075 240); /* diagnosis panel */
+
+  --gradient-voice-panel: radial-gradient(
+      circle at 50% 42%,
+      color-mix(in oklab, var(--voice-glow) 22%, transparent),
+      transparent 55%
+    ),
+    linear-gradient(180deg, var(--voice-deep), color-mix(in oklab, var(--voice-deep) 70%, var(--background)));
+  --gradient-orb: radial-gradient(circle at 50% 118%, var(--voice-mist) 0%, var(--voice-mist) 22%, transparent 62%),
+    radial-gradient(circle at 30% 20%, color-mix(in oklab, var(--voice) 90%, var(--voice-mist)) 0%, transparent 55%),
+    linear-gradient(180deg, var(--voice) 0%, var(--voice-glow) 58%, var(--voice-mist) 100%);
+  --shadow-orb: 0 0 60px -6px color-mix(in oklab, var(--voice-glow) 70%, transparent),
+    0 0 0 1px color-mix(in oklab, var(--voice-mist) 30%, transparent) inset;
 
   --panel: oklch(0.21 0.032 264.7 / 62%);
   --panel-strong: oklch(0.233 0.035 266.6 / 90%);
@@ -229,6 +254,65 @@
   border-color: var(--block);
 }
 
+/* ---------- Voice orb ---------- */
+
+@utility voice-panel {
+  background: var(--gradient-voice-panel);
+  border: 1px solid color-mix(in oklab, var(--voice-glow) 30%, transparent);
+  border-radius: var(--radius-2xl);
+}
+
+@utility orb-surface {
+  background: var(--gradient-orb);
+  box-shadow: var(--shadow-orb);
+  overflow: hidden;
+  will-change: transform;
+}
+
+@utility orb-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(14px);
+  background: color-mix(in oklab, var(--voice-mist) 75%, transparent);
+  animation: orb-drift 9s ease-in-out infinite;
+}
+
+@utility orb-ring {
+  border: 1.5px solid color-mix(in oklab, var(--voice-glow) 45%, transparent);
+  will-change: transform, opacity;
+}
+
+@keyframes orb-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(18%, -12%) scale(1.15);
+  }
+  66% {
+    transform: translate(-14%, 10%) scale(0.9);
+  }
+}
+
+@keyframes orb-processing {
+  0%,
+  100% {
+    filter: brightness(1) saturate(1);
+    box-shadow: var(--shadow-orb);
+  }
+  50% {
+    filter: brightness(1.18) saturate(1.15);
+    box-shadow:
+      0 0 90px 6px color-mix(in oklab, var(--voice-glow) 80%, transparent),
+      0 0 0 1px color-mix(in oklab, var(--voice-mist) 40%, transparent) inset;
+  }
+}
+
+@utility animate-orb-processing {
+  animation: orb-processing 1.4s ease-in-out infinite;
+}
+
 /* ---------- Motion ---------- */
 
 @keyframes emergency-blink {
@@ -296,7 +380,9 @@
   .animate-emergency,
   .animate-flow,
   .animate-packet,
-  .animate-soft-pulse {
+  .animate-soft-pulse,
+  .animate-orb-processing,
+  .orb-blob {
     animation: none;
   }
 }
