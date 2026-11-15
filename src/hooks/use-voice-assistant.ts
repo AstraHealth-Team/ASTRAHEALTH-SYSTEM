@@ -187,6 +187,7 @@ export function useVoiceAssistant({ triage, vitals }: { triage: Triage; vitals: 
       return true;
     } catch {
       setMicStatus("denied");
+      sttBlockedRef.current = true;
       return false;
     }
   }
@@ -234,7 +235,7 @@ export function useVoiceAssistant({ triage, vitals }: { triage: Triage; vitals: 
     setInterim("");
     setState("listening");
     const Ctor = getRecognitionCtor();
-    if (!Ctor || sttBlockedRef.current || micStatus === "denied") return; // text / quick replies only
+    if (!Ctor || sttBlockedRef.current) return; // text / quick replies only
     const rec = new Ctor();
     rec.lang = speechLang();
     rec.continuous = false;
