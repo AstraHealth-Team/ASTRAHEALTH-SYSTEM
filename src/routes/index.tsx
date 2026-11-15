@@ -16,20 +16,22 @@ import { VoiceDiagnosticModal } from "@/components/mission/VoiceDiagnosticModal"
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "ASTRA Health HMI · Monitoreo de salud para astronautas" },
+      { title: "ASTRA Health HMI | NASA Space Apps 2026" },
       {
         name: "description",
         content:
           "Consola médica aeroespacial NASA-STD-3001: sensores IEEE 11073, red DTN, Edge AI + FHIR R4 y alertas duales para misiones LEO, Luna y Marte.",
       },
-      { property: "og:title", content: "ASTRA Health HMI · NASA Space Apps 2026" },
+      { property: "og:title", content: "ASTRA Health HMI | NASA Space Apps 2026" },
       {
         property: "og:description",
         content:
           "Prototipo interactivo de monitoreo de salud de astronautas con simulador de latencia y escenarios de emergencia.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: "/logo-astrahealth.png" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "/logo-astrahealth.png" },
     ],
   }),
   component: Index,
