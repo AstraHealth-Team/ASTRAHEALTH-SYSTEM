@@ -338,3 +338,26 @@ export function buildReport(opts: {
   lines.push("Sugerencia no vinculante generada a bordo · decisión final del CMO / Cirujano de Vuelo.");
   return lines.join("\n");
 }
+
+/** Short spoken acknowledgement after an answer */
+export function acknowledge(
+  focus: TriageSystem | null,
+  updates: Partial<TriageState>,
+  merged: TriageState,
+): string {
+  const word = (l: TriageLevel) => (l === "red" ? "rojo" : l === "yellow" ? "amarillo" : "verde");
+  const parts: string[] = [];
+  if (focus) {
+    const a = merged[focus];
+    const title = TRIAGE_META[focus].title.toLowerCase();
+    if (!updates[focus]) parts.push(`Sin síntomas claros; mantengo el sistema ${title} en ${word(a.level)}.`);
+    else if (a.level === "green") parts.push(`Entendido, sistema ${title} en verde.`);
+    else parts.push(`Registro ${a.finding.toLowerCase()}: sistema ${title} en ${word(a.level)}.`);
+  }
+  for (const s of TRIAGE_SYSTEMS) {
+    if (s === focus) continue;
+    const u = updates[s];
+    if (u && u.level !== "green") parts.push(`También anoto ${u.finding.toLowerCase()}: ${TRIAGE_META[s].title.toLowerCase()} en ${word(u.level)}.`);
+  }
+  return parts.join(" ");
+}
