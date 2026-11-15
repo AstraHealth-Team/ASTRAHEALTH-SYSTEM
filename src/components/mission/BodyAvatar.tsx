@@ -1,48 +1,54 @@
 import { cn } from "@/lib/utils";
-import { SYSTEM_META, systemLevel, type HealthLevel, type SystemId, type Vitals } from "@/lib/mission";
+import {
+  LEVEL_NAME,
+  TRIAGE_META,
+  TRIAGE_SYSTEMS,
+  type TriageState,
+  type TriageSystem,
+} from "@/lib/triage";
 
-const FILL: Record<HealthLevel, string> = {
-  emergency: "fill-emergency",
-  warning: "fill-warning",
-  caution: "fill-caution",
-  advisory: "fill-advisory",
-  nominal: "fill-nominal",
+const FILL = {
+  red: "fill-emergency",
+  yellow: "fill-warning",
+  green: "fill-nominal",
+} as const;
+const STROKE = {
+  red: "stroke-emergency",
+  yellow: "stroke-warning",
+  green: "stroke-nominal",
+} as const;
+
+const HOTSPOTS: Record<
+  TriageSystem,
+  { cx: number; cy: number; r: number; cardX: number; cardY: number }
+> = {
+  neuro: { cx: 100, cy: 46, r: 11, cardX: 163, cardY: 10 },
+  cardio: { cx: 112, cy: 132, r: 13, cardX: 164, cardY: 112 },
+  resp: { cx: 89, cy: 164, r: 12, cardX: 164, cardY: 180 },
 };
-const STROKE: Record<HealthLevel, string> = {
-  emergency: "stroke-emergency",
-  warning: "stroke-warning",
-  caution: "stroke-caution",
-  advisory: "stroke-advisory",
-  nominal: "stroke-nominal",
-};
 
-const HOTSPOTS: { id: SystemId; cx: number; cy: number; r: number; lx: number; ly: number; anchor: "start" | "end" }[] = [
-  { id: "neuro", cx: 100, cy: 46, r: 11, lx: 168, ly: 40, anchor: "start" },
-  { id: "cardio", cx: 112, cy: 134, r: 13, lx: 168, ly: 128, anchor: "start" },
-  { id: "radiation", cx: 100, cy: 205, r: 15, lx: 32, ly: 196, anchor: "end" },
-  { id: "msk", cx: 83, cy: 310, r: 12, lx: 32, ly: 306, anchor: "end" },
-];
-
-const SHORT: Record<SystemId, string> = {
-  neuro: "Neuro-Ocular",
-  cardio: "Cardiovascular",
-  radiation: "Radiación",
-  msk: "Sueño · MSK",
+const SHORT: Record<TriageSystem, string> = {
+  neuro: "Neurológico",
+  cardio: "Cardiaco",
   resp: "Respiratorio",
 };
 
 export function BodyAvatar({
-  vitals,
+  systems,
   selected,
   onSelect,
 }: {
-  vitals: Vitals;
-  selected: SystemId;
-  onSelect: (s: SystemId) => void;
+  systems: TriageState;
+  selected: TriageSystem;
+  onSelect: (system: TriageSystem) => void;
 }) {
-  const radLevel = systemLevel("radiation", vitals);
   return (
-    <svg viewBox="-30 0 260 420" className="mx-auto h-full max-h-[440px] w-full" role="group" aria-label="Avatar anatómico interactivo">
+    <svg
+      viewBox="-30 0 310 420"
+      className="mx-auto h-full max-h-[440px] w-full"
+      role="group"
+      aria-label="Avatar anatómico de triaje"
+    >
       <defs>
         <radialGradient id="body-glow" cx="50%" cy="40%" r="60%">
           <stop offset="0%" stopColor="var(--hmi)" stopOpacity="0.14" />
@@ -50,19 +56,7 @@ export function BodyAvatar({
         </radialGradient>
       </defs>
       <ellipse cx="100" cy="210" rx="120" ry="210" fill="url(#body-glow)" />
-      {radLevel !== "nominal" && (
-        <ellipse
-          cx="100"
-          cy="210"
-          rx="92"
-          ry="200"
-          className={cn("fill-none animate-emergency", STROKE[radLevel])}
-          strokeWidth="2"
-          strokeDasharray="4 6"
-        />
-      )}
 
-      {/* Silhouette */}
       <g className="fill-muted stroke-muted-foreground/40" strokeWidth="1.2">
         <ellipse cx="100" cy="46" rx="25" ry="30" />
         <rect x="91" y="72" width="18" height="20" rx="6" />
@@ -74,48 +68,123 @@ export function BodyAvatar({
         <path d="M84 248 Q79 320 82 404" strokeWidth="25" />
         <path d="M116 248 Q121 320 118 404" strokeWidth="25" />
       </g>
-      {/* anatomical hints */}
       <g className="stroke-muted-foreground/25" fill="none" strokeWidth="1">
         <path d="M100 100 L100 250" />
         <path d="M74 120 Q100 130 126 120" />
-        <path d="M70 140 Q100 152 130 140" />
-        <path d="M70 160 Q100 172 130 160" />
+        <path d="M70 140 Q84 132 94 145 Q100 155 94 180 Q82 183 74 168 Z" />
+        <path d="M126 140 Q112 132 102 145 Q96 155 102 180 Q114 183 122 168 Z" />
       </g>
 
-      {HOTSPOTS.map((h) => {
-        const level = systemLevel(h.id, vitals);
-        const active = selected === h.id;
+      {TRIAGE_SYSTEMS.map((system) => {
+        const hotspot = HOTSPOTS[system];
+        const assessment = systems[system];
+        const level = assessment.level;
+        const active = selected === system;
+        const flagged = level !== "green";
         return (
           <g
-            key={h.id}
+            key={system}
             role="button"
             tabIndex={0}
             aria-pressed={active}
-            aria-label={`${SYSTEM_META[h.id].title}: ${level}`}
-            onClick={() => onSelect(h.id)}
-            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect(h.id)}
+            aria-label={`${TRIAGE_META[system].title}: ${LEVEL_NAME[level]}`}
+            onClick={() => onSelect(system)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onSelect(system);
+              }
+            }}
             className="cursor-pointer outline-none [&:focus-visible_circle.ring]:stroke-foreground"
           >
             <line
-              x1={h.cx}
-              y1={h.cy}
-              x2={h.anchor === "start" ? h.lx - 4 : h.lx + 4}
-              y2={h.ly}
-              className={cn(STROKE[level], active ? "opacity-90" : "opacity-40")}
+              x1={hotspot.cx}
+              y1={hotspot.cy}
+              x2={hotspot.cardX}
+              y2={hotspot.cardY + 22}
+              className={cn(
+                STROKE[level],
+                flagged ? "opacity-90" : active ? "opacity-80" : "opacity-30",
+              )}
               strokeWidth="1"
             />
-            <circle cx={h.cx} cy={h.cy} r={h.r + 8} className={cn(FILL[level], "animate-soft-pulse")} style={{ transformOrigin: "center", transformBox: "fill-box" }} opacity="0.35" />
-            <circle cx={h.cx} cy={h.cy} r={h.r} className={cn(FILL[level], level === "emergency" && "animate-emergency")} opacity="0.9" />
-            <circle className="ring fill-none" cx={h.cx} cy={h.cy} r={h.r + 4} stroke="transparent" strokeWidth="2" />
-            {active && <circle cx={h.cx} cy={h.cy} r={h.r + 4} className="fill-none stroke-foreground" strokeWidth="2" />}
-            <text
-              x={h.lx}
-              y={h.ly + 4}
-              textAnchor={h.anchor}
-              className={cn("text-[11px] font-semibold", active ? "fill-foreground" : "fill-muted-foreground")}
-            >
-              {SHORT[h.id]}
-            </text>
+            <circle
+              cx={hotspot.cx}
+              cy={hotspot.cy}
+              r={hotspot.r + 8}
+              className={cn(FILL[level], (flagged || active) && "animate-soft-pulse")}
+              style={{ transformOrigin: "center", transformBox: "fill-box" }}
+              opacity={flagged ? "0.5" : "0.2"}
+            />
+            <circle
+              cx={hotspot.cx}
+              cy={hotspot.cy}
+              r={hotspot.r}
+              className={cn(FILL[level], level === "red" && "animate-emergency")}
+              opacity="0.9"
+            />
+            <circle
+              className="ring fill-none"
+              cx={hotspot.cx}
+              cy={hotspot.cy}
+              r={hotspot.r + 4}
+              stroke="transparent"
+              strokeWidth="2"
+            />
+            {active && (
+              <circle
+                cx={hotspot.cx}
+                cy={hotspot.cy}
+                r={hotspot.r + 4}
+                className="fill-none stroke-foreground"
+                strokeWidth="2"
+              />
+            )}
+            {flagged ? (
+              <g aria-label={`${SHORT[system]}: ${LEVEL_NAME[level]}. ${assessment.finding}`}>
+                <rect
+                  x={hotspot.cardX}
+                  y={hotspot.cardY}
+                  width="126"
+                  height="58"
+                  rx="7"
+                  className={cn(
+                    "fill-background",
+                    level === "red" ? "stroke-emergency" : "stroke-warning",
+                  )}
+                  strokeWidth="1.5"
+                />
+                <text
+                  x={hotspot.cardX + 7}
+                  y={hotspot.cardY + 14}
+                  className={cn(
+                    "text-[9px] font-bold",
+                    level === "red" ? "fill-emergency" : "fill-warning",
+                  )}
+                >
+                  {SHORT[system]} · {level === "red" ? "ROJO" : "AMARILLO"}
+                </text>
+                <foreignObject x={hotspot.cardX + 6} y={hotspot.cardY + 18} width="114" height="37">
+                  <p
+                    xmlns="http://www.w3.org/1999/xhtml"
+                    className="line-clamp-2 text-[8px] leading-tight text-foreground"
+                  >
+                    {assessment.finding}
+                  </p>
+                </foreignObject>
+              </g>
+            ) : (
+              <text
+                x={hotspot.cardX + 3}
+                y={hotspot.cardY + 26}
+                className={cn(
+                  "text-[10px] font-semibold",
+                  active ? "fill-foreground" : "fill-muted-foreground",
+                )}
+              >
+                {SHORT[system]}
+              </text>
+            )}
           </g>
         );
       })}

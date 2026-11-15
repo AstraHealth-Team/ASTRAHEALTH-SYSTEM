@@ -20,6 +20,8 @@ import {
   type SystemId,
 } from "@/lib/mission";
 import type { MissionSim } from "@/hooks/use-mission-sim";
+import type { Triage } from "@/hooks/use-triage";
+import type { TriageSystem } from "@/lib/triage";
 import { AlertStack } from "./AlertStack";
 import { BodyAvatar } from "./BodyAvatar";
 import { Countermeasures } from "./Countermeasures";
@@ -36,14 +38,16 @@ const PLAIN: Record<string, string> = {
   advisory: "Todo está en orden.",
 };
 
-function AvatarExplorer({ sim }: { sim: MissionSim }) {
-  const [system, setSystem] = useState<SystemId>("cardio");
-  const active = sim.scenario === "spe" ? "radiation" : system;
+function AvatarExplorer({ sim, triage }: { sim: MissionSim; triage: Triage }) {
+  const [system, setSystem] = useState<TriageSystem>("cardio");
+  const active: SystemId = system;
   return (
     <div className="panel grid gap-4 p-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <div className="min-h-[340px]">
-        <p className="label-caps mb-1 text-muted-foreground">Avatar anatómico · toca un sistema</p>
-        <BodyAvatar vitals={sim.vitals} selected={active} onSelect={setSystem} />
+        <p className="label-caps mb-1 text-muted-foreground">
+          Avatar anatómico · 3 sistemas de triaje
+        </p>
+        <BodyAvatar systems={triage.systems} selected={system} onSelect={setSystem} />
       </div>
       <SystemDetail system={active} vitals={sim.vitals} />
     </div>
@@ -55,10 +59,24 @@ function Instructions({ sim, big }: { sim: MissionSim; big?: boolean }) {
   const [done, setDone] = useState<Record<string, boolean>>({});
   const urgent = sim.level === "warning" || sim.level === "emergency";
   return (
-    <div className={cn("rounded-xl border p-4", urgent ? LEVEL_SOFT[sim.level] : "border-border bg-muted/30")}>
-      <p className={cn("label-caps mb-2 flex items-center gap-2", urgent ? LEVEL_TEXT[sim.level] : "text-muted-foreground")}>
+    <div
+      className={cn(
+        "rounded-xl border p-4",
+        urgent ? LEVEL_SOFT[sim.level] : "border-border bg-muted/30",
+      )}
+    >
+      <p
+        className={cn(
+          "label-caps mb-2 flex items-center gap-2",
+          urgent ? LEVEL_TEXT[sim.level] : "text-muted-foreground",
+        )}
+      >
         <ListChecks className="size-3.5" />
-        {sim.scenario === "spe" ? "Orden de evacuación" : sim.scenario === "eva" ? "Instrucciones inmediatas" : "Guía de autocuidado"}
+        {sim.scenario === "spe"
+          ? "Orden de evacuación"
+          : sim.scenario === "eva"
+            ? "Instrucciones inmediatas"
+            : "Guía de autocuidado"}
       </p>
       <ol className="grid gap-2">
         {s.instructions.map((step, i) => {
@@ -75,12 +93,22 @@ function Instructions({ sim, big }: { sim: MissionSim; big?: boolean }) {
                 <span
                   className={cn(
                     "telemetry grid size-7 shrink-0 place-items-center rounded-full border text-xs font-bold",
-                    done[key] ? "border-nominal bg-nominal text-background" : "border-foreground/40",
+                    done[key]
+                      ? "border-nominal bg-nominal text-background"
+                      : "border-foreground/40",
                   )}
                 >
                   {done[key] ? "✓" : i + 1}
                 </span>
-                <span className={cn(big ? "text-base" : "text-sm", "font-medium", done[key] && "line-through")}>{step}</span>
+                <span
+                  className={cn(
+                    big ? "text-base" : "text-sm",
+                    "font-medium",
+                    done[key] && "line-through",
+                  )}
+                >
+                  {step}
+                </span>
               </button>
             </li>
           );
@@ -90,12 +118,24 @@ function Instructions({ sim, big }: { sim: MissionSim; big?: boolean }) {
   );
 }
 
-function AstronautView({ sim }: { sim: MissionSim }) {
+function AstronautView({ sim, triage }: { sim: MissionSim; triage: Triage }) {
   const v = sim.vitals;
   const cards = [
-    { label: "Corazón", value: `${v.hr}`, unit: "lat/min", icon: HeartPulse, warn: v.pvcPerMin > 6 },
+    {
+      label: "Corazón",
+      value: `${v.hr}`,
+      unit: "lat/min",
+      icon: HeartPulse,
+      warn: v.pvcPerMin > 6,
+    },
     { label: "Oxígeno en sangre", value: `${v.spo2}`, unit: "%", icon: Wind, warn: v.spo2 < 94 },
-    { label: "Radiación", value: formatRate(v.radRateUSvH), unit: v.radRateUSvH >= 1000 ? "" : "µSv/h", icon: Radiation, warn: v.radRateUSvH > 150000 },
+    {
+      label: "Radiación",
+      value: formatRate(v.radRateUSvH),
+      unit: v.radRateUSvH >= 1000 ? "" : "µSv/h",
+      icon: Radiation,
+      warn: v.radRateUSvH > 150000,
+    },
     { label: "Sueño anoche", value: `${v.sleepEff}`, unit: "%", icon: Moon, warn: false },
   ];
   return (
@@ -115,15 +155,26 @@ function AstronautView({ sim }: { sim: MissionSim }) {
                   key={l}
                   className={cn(
                     "size-4 rounded-full transition-opacity",
-                    l === "emergency" ? "bg-emergency" : l === "warning" ? "bg-warning" : "bg-nominal",
-                    (sim.level === l || (l === "warning" && sim.level === "caution")) ? "opacity-100" : "opacity-15",
+                    l === "emergency"
+                      ? "bg-emergency"
+                      : l === "warning"
+                        ? "bg-warning"
+                        : "bg-nominal",
+                    sim.level === l || (l === "warning" && sim.level === "caution")
+                      ? "opacity-100"
+                      : "opacity-15",
                   )}
                 />
               ))}
             </div>
             <div>
               <p className="label-caps text-muted-foreground">Semáforo de salud</p>
-              <p className={cn("flex items-center gap-2 text-3xl font-bold tracking-tight", LEVEL_TEXT[sim.level])}>
+              <p
+                className={cn(
+                  "flex items-center gap-2 text-3xl font-bold tracking-tight",
+                  LEVEL_TEXT[sim.level],
+                )}
+              >
                 <LevelIcon level={sim.level} className="size-7" />
                 {OVERALL_LABEL[sim.level]}
               </p>
@@ -149,7 +200,7 @@ function AstronautView({ sim }: { sim: MissionSim }) {
         ))}
       </div>
 
-      <AvatarExplorer sim={sim} />
+      <AvatarExplorer sim={sim} triage={triage} />
       <Countermeasures sim={sim} />
       <TrendPanel scenario={sim.scenario} title="Tendencias Fisiológicas Dinámicas" />
     </div>
@@ -183,30 +234,69 @@ const INVENTORY = [
   { item: "Suero salino 500 mL", qty: 5, min: 4 },
 ];
 
-function CmoView({ sim }: { sim: MissionSim }) {
+function CmoView({ sim, triage }: { sim: MissionSim; triage: Triage }) {
   const v = sim.vitals;
   return (
     <div className="grid gap-4">
-      <Panel title="Formas de onda bioeléctricas · Wavelet-LMS" icon={<Activity className="size-3.5 text-hmi" />}
-        aside={<span className="telemetry text-xs text-muted-foreground">25 mm/s · 10 mm/mV</span>}>
+      <Panel
+        title="Formas de onda bioeléctricas · Wavelet-LMS"
+        icon={<Activity className="size-3.5 text-hmi" />}
+        aside={<span className="telemetry text-xs text-muted-foreground">25 mm/s · 10 mm/mV</span>}
+      >
         <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_9rem]">
           <div className="grid gap-1 divide-y divide-hairline rounded-lg bg-background/50">
-            <WaveCanvas label="ECG II" hr={v.hr} pvcPerMin={v.pvcPerMin} className="text-nominal" height={110} />
-            <WaveCanvas label="Pleth SpO2" kind="pleth" hr={v.hr} className="text-advisory" height={60} />
-            <WaveCanvas label="Resp" kind="resp" hr={v.hr} rr={v.rr} className="text-caution" height={52} />
+            <WaveCanvas
+              label="ECG II"
+              hr={v.hr}
+              pvcPerMin={v.pvcPerMin}
+              className="text-nominal"
+              height={110}
+            />
+            <WaveCanvas
+              label="Pleth SpO2"
+              kind="pleth"
+              hr={v.hr}
+              className="text-advisory"
+              height={60}
+            />
+            <WaveCanvas
+              label="Resp"
+              kind="resp"
+              hr={v.hr}
+              rr={v.rr}
+              className="text-caution"
+              height={52}
+            />
           </div>
           <div className="telemetry grid grid-cols-3 gap-2 text-center md:grid-cols-1 md:text-right">
-            <div><p className="label-caps text-nominal">FC</p><p className="text-3xl font-semibold text-nominal">{v.hr}</p></div>
-            <div><p className="label-caps text-advisory">SpO2</p><p className="text-2xl font-semibold text-advisory">{v.spo2}</p></div>
-            <div><p className="label-caps text-caution">FR</p><p className="text-2xl font-semibold text-caution">{v.rr}</p></div>
-            <div className="col-span-3 md:col-span-1"><p className="label-caps text-muted-foreground">PA · PVC</p><p className="text-sm">{v.sys}/{v.dia} · {v.pvcPerMin}/min</p></div>
+            <div>
+              <p className="label-caps text-nominal">FC</p>
+              <p className="text-3xl font-semibold text-nominal">{v.hr}</p>
+            </div>
+            <div>
+              <p className="label-caps text-advisory">SpO2</p>
+              <p className="text-2xl font-semibold text-advisory">{v.spo2}</p>
+            </div>
+            <div>
+              <p className="label-caps text-caution">FR</p>
+              <p className="text-2xl font-semibold text-caution">{v.rr}</p>
+            </div>
+            <div className="col-span-3 md:col-span-1">
+              <p className="label-caps text-muted-foreground">PA · PVC</p>
+              <p className="text-sm">
+                {v.sys}/{v.dia} · {v.pvcPerMin}/min
+              </p>
+            </div>
           </div>
         </div>
       </Panel>
 
-      <AvatarExplorer sim={sim} />
+      <AvatarExplorer sim={sim} triage={triage} />
       <div className="grid gap-4 lg:grid-cols-2">
-        <Panel title="Diagnóstico diferencial asistido (IA)" icon={<ClipboardList className="size-3.5 text-hmi" />}>
+        <Panel
+          title="Diagnóstico diferencial asistido (IA)"
+          icon={<ClipboardList className="size-3.5 text-hmi" />}
+        >
           <ul className="grid gap-2">
             {DIFFERENTIAL[sim.scenario].map((d) => (
               <li key={d.dx} className="text-sm">
@@ -215,17 +305,26 @@ function CmoView({ sim }: { sim: MissionSim }) {
                   <span className="telemetry text-muted-foreground">{Math.round(d.p * 100)}%</span>
                 </div>
                 <div className="mt-1 h-1.5 rounded-full bg-muted">
-                  <div className="h-full rounded-full bg-hmi transition-all duration-700" style={{ width: `${d.p * 100}%` }} />
+                  <div
+                    className="h-full rounded-full bg-hmi transition-all duration-700"
+                    style={{ width: `${d.p * 100}%` }}
+                  />
                 </div>
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-[0.7rem] text-muted-foreground">Sugerencia no vinculante · decisión final del CMO.</p>
+          <p className="mt-3 text-[0.7rem] text-muted-foreground">
+            Sugerencia no vinculante · decisión final del CMO.
+          </p>
         </Panel>
         <Panel title="Guía EVA" icon={<ListChecks className="size-3.5 text-hmi" />}>
-          <Instructions sim={{ ...sim, scenario: sim.scenario === "nominal" ? "eva" : sim.scenario }} />
+          <Instructions
+            sim={{ ...sim, scenario: sim.scenario === "nominal" ? "eva" : sim.scenario }}
+          />
           {sim.scenario === "nominal" && (
-            <p className="mt-2 text-[0.7rem] text-muted-foreground">Vista previa del protocolo de contingencia EVA.</p>
+            <p className="mt-2 text-[0.7rem] text-muted-foreground">
+              Vista previa del protocolo de contingencia EVA.
+            </p>
           )}
         </Panel>
       </div>
@@ -235,7 +334,10 @@ function CmoView({ sim }: { sim: MissionSim }) {
             {INVENTORY.map((i) => {
               const low = i.qty < i.min;
               return (
-                <li key={i.item} className="flex items-center justify-between gap-2 border-b border-hairline py-1.5">
+                <li
+                  key={i.item}
+                  className="flex items-center justify-between gap-2 border-b border-hairline py-1.5"
+                >
                   <span className="flex items-center gap-2">
                     {low && <LevelIcon level="caution" className="size-3.5" />}
                     {i.item}
@@ -259,32 +361,62 @@ function SurgeonView({ sim }: { sim: MissionSim }) {
   const env = [
     { label: "ppCO2", value: v.co2.toFixed(1), unit: "mmHg", lim: "< 2.0", warn: v.co2 > 2 },
     { label: "ppO2", value: v.o2.toFixed(1), unit: "kPa", lim: "19.5–23.1", warn: false },
-    { label: "Presión cabina", value: v.cabinPressure.toFixed(1), unit: "kPa", lim: "101.3", warn: false },
-    { label: "Radiación cabina", value: formatRate(v.radRateUSvH), unit: v.radRateUSvH >= 1000 ? "" : "µSv/h", lim: "< 50 µSv/h", warn: v.radRateUSvH > 50 },
+    {
+      label: "Presión cabina",
+      value: v.cabinPressure.toFixed(1),
+      unit: "kPa",
+      lim: "101.3",
+      warn: false,
+    },
+    {
+      label: "Radiación cabina",
+      value: formatRate(v.radRateUSvH),
+      unit: v.radRateUSvH >= 1000 ? "" : "µSv/h",
+      lim: "< 50 µSv/h",
+      warn: v.radRateUSvH > 50,
+    },
     { label: "Temperatura", value: "22.4", unit: "°C", lim: "18–27", warn: false },
     { label: "Humedad", value: "46", unit: "%", lim: "25–75", warn: false },
   ];
   const day = 142;
   return (
     <div className="grid gap-4">
-      <Panel title="Vista longitudinal de la misión" icon={<Gauge className="size-3.5 text-hmi" />}
-        aside={<span className="telemetry text-xs text-muted-foreground">Día {day} / 180</span>}>
+      <Panel
+        title="Vista longitudinal de la misión"
+        icon={<Gauge className="size-3.5 text-hmi" />}
+        aside={<span className="telemetry text-xs text-muted-foreground">Día {day} / 180</span>}
+      >
         <div className="h-2 overflow-hidden rounded-full bg-muted">
           <div className="h-full rounded-full bg-hmi" style={{ width: `${(day / 180) * 100}%` }} />
         </div>
         <div className="telemetry mt-2 flex justify-between text-[0.7rem] text-muted-foreground">
-          <span>Lanzamiento</span><span>EVA #3 · D128</span><span>Hoy · D{day}</span><span>Retorno</span>
+          <span>Lanzamiento</span>
+          <span>EVA #3 · D128</span>
+          <span>Hoy · D{day}</span>
+          <span>Retorno</span>
         </div>
       </Panel>
       <TrendPanel scenario={sim.scenario} title="Evolución crónica de la tripulación" />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-        <Panel title="Métricas ambientales de cabina (ECLSS)" icon={<Wind className="size-3.5 text-hmi" />}>
+        <Panel
+          title="Métricas ambientales de cabina (ECLSS)"
+          icon={<Wind className="size-3.5 text-hmi" />}
+        >
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {env.map((e) => (
-              <div key={e.label} className={cn("rounded-lg border p-3", e.warn ? LEVEL_SOFT[sim.level === "emergency" ? "emergency" : "caution"] : "border-hairline bg-background/40")}>
+              <div
+                key={e.label}
+                className={cn(
+                  "rounded-lg border p-3",
+                  e.warn
+                    ? LEVEL_SOFT[sim.level === "emergency" ? "emergency" : "caution"]
+                    : "border-hairline bg-background/40",
+                )}
+              >
                 <p className="text-xs text-muted-foreground">{e.label}</p>
                 <p className="telemetry text-xl font-semibold">
-                  {e.value} <span className="text-xs font-normal text-muted-foreground">{e.unit}</span>
+                  {e.value}{" "}
+                  <span className="text-xs font-normal text-muted-foreground">{e.unit}</span>
                 </p>
                 <p className="telemetry text-[0.65rem] text-muted-foreground">Límite {e.lim}</p>
               </div>
@@ -293,15 +425,34 @@ function SurgeonView({ sim }: { sim: MissionSim }) {
         </Panel>
         <Panel title="Sincronización con LSAH" icon={<Database className="size-3.5 text-hmi" />}>
           <dl className="grid gap-2 text-sm">
-            <div className="flex justify-between"><dt className="text-muted-foreground">Estado</dt>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Estado</dt>
               <dd className={cn("font-semibold", sim.link.realtime ? "text-nominal" : "text-dtn")}>
                 {sim.link.realtime ? "Sincronizado" : "En cola DTN"}
-              </dd></div>
-            <div className="flex justify-between"><dt className="text-muted-foreground">Último lote</dt><dd className="telemetry">06:12 UTC</dd></div>
-            <div className="flex justify-between"><dt className="text-muted-foreground">Bundles entregados</dt><dd className="telemetry">{sim.dtn.delivered.toLocaleString("es")}</dd></div>
-            <div className="flex justify-between"><dt className="text-muted-foreground">Pendientes</dt><dd className={cn("telemetry", sim.dtn.queued && "text-dtn")}>{sim.dtn.queued.toLocaleString("es")}</dd></div>
-            <div className="flex justify-between"><dt className="text-muted-foreground">Latencia</dt><dd className="telemetry">{sim.link.latencyLabel}</dd></div>
-            <div className="flex justify-between"><dt className="text-muted-foreground">Formato</dt><dd className="telemetry">HL7 FHIR R4 Bundle</dd></div>
+              </dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Último lote</dt>
+              <dd className="telemetry">06:12 UTC</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Bundles entregados</dt>
+              <dd className="telemetry">{sim.dtn.delivered.toLocaleString("es")}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Pendientes</dt>
+              <dd className={cn("telemetry", sim.dtn.queued && "text-dtn")}>
+                {sim.dtn.queued.toLocaleString("es")}
+              </dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Latencia</dt>
+              <dd className="telemetry">{sim.link.latencyLabel}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Formato</dt>
+              <dd className="telemetry">HL7 FHIR R4 Bundle</dd>
+            </div>
           </dl>
         </Panel>
       </div>
@@ -309,14 +460,20 @@ function SurgeonView({ sim }: { sim: MissionSim }) {
   );
 }
 
-export function HmiBlock({ sim }: { sim: MissionSim }) {
+export function HmiBlock({ sim, triage }: { sim: MissionSim; triage: Triage }) {
   return (
     <BlockFrame block="hmi" hideHeader>
       <div className="grid gap-4">
-        <AlertStack alerts={sim.alerts} suppressed={sim.suppressed} criticalPhase={sim.criticalPhase} />
+        <AlertStack
+          alerts={sim.alerts}
+          suppressed={sim.suppressed}
+          criticalPhase={sim.criticalPhase}
+          triage={triage}
+          mission={sim.scenario}
+        />
         <div key={sim.view} className="animate-in fade-in duration-300">
-          {sim.view === "astronaut" && <AstronautView sim={sim} />}
-          {sim.view === "cmo" && <CmoView sim={sim} />}
+          {sim.view === "astronaut" && <AstronautView sim={sim} triage={triage} />}
+          {sim.view === "cmo" && <CmoView sim={sim} triage={triage} />}
           {sim.view === "surgeon" && <SurgeonView sim={sim} />}
         </div>
       </div>
