@@ -16,7 +16,7 @@ import { VoiceDiagnosticModal } from "@/components/mission/VoiceDiagnosticModal"
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "ASTRA Health HMI | NASA Space Apps 2026" },
+      { title: "ASTRA Health HMI" },
       {
         name: "description",
         content:
@@ -33,6 +33,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:image", content: "/logo-astrahealth.png" },
     ],
+    links: [{ rel: "icon", href: "/favicon.svg", type: "image/svg+xml" }],
   }),
   component: Index,
 });

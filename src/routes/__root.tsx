@@ -82,7 +82,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "ASTRA Health HMI | NASA Space Apps 2026" },
+      { title: "ASTRA Health HMI" },
       { name: "description", content: "Monitoreo de salud para astronautas · NASA Space Apps 2026" },
       { property: "og:title", content: "ASTRA Health HMI | NASA Space Apps 2026" },
       { property: "og:description", content: "Monitoreo de salud para astronautas · NASA Space Apps 2026" },
@@ -94,7 +94,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/logo-astrahealth.png", type: "image/png" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "apple-touch-icon", href: "/logo-astrahealth.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
