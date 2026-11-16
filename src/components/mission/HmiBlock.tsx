@@ -1,23 +1,11 @@
 import { useState } from "react";
-import {
-  Activity,
-  Boxes,
-  ClipboardList,
-  Database,
-  Gauge,
-  HeartPulse,
-  ListChecks,
-  Moon,
-  Radiation,
-  Wind,
-} from "lucide-react";
+import { Activity, Boxes, ClipboardList, ListChecks } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
+  getInformationDeliveryStatus,
   OVERALL_LABEL,
   SCENARIOS,
-  formatRate,
   type ScenarioId,
-  type SystemId,
 } from "@/lib/mission";
 import type { MissionSim } from "@/hooks/use-mission-sim";
 import type { Triage } from "@/hooks/use-triage";
@@ -25,10 +13,14 @@ import type { TriageSystem } from "@/lib/triage";
 import { AlertStack } from "./AlertStack";
 import { BodyAvatar } from "./BodyAvatar";
 import { Countermeasures } from "./Countermeasures";
+import { ArchitectureView } from "./ArchitectureDialog";
 import { BlockFrame, LEVEL_SOFT, LEVEL_TEXT, LevelIcon, Panel } from "./kit";
-import { SystemDetail } from "./SystemDetail";
+import { ReferencesPanel } from "./ReferencesDialog";
+import { SensorNetworkTopology } from "./SensorNetworkTopology";
 import { TrendPanel } from "./TrendPanel";
+import { VitalKpis } from "./VitalKpis";
 import { WaveCanvas } from "./WaveCanvas";
+import { getControllerTelemetry } from "@/lib/sensor-network";
 
 const PLAIN: Record<string, string> = {
   nominal: "Todo está en orden. Puedes seguir tu rutina.",
@@ -40,16 +32,15 @@ const PLAIN: Record<string, string> = {
 
 function AvatarExplorer({ sim, triage }: { sim: MissionSim; triage: Triage }) {
   const [system, setSystem] = useState<TriageSystem>("cardio");
-  const active: SystemId = system;
   return (
-    <div className="panel grid gap-4 p-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+    <div className="panel grid min-w-0 items-start gap-4 p-4 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <div className="min-h-[340px]">
         <p className="label-caps mb-1 text-muted-foreground">
           Avatar anatómico · 3 sistemas de triaje
         </p>
         <BodyAvatar systems={triage.systems} selected={system} onSelect={setSystem} />
       </div>
-      <SystemDetail system={active} vitals={sim.vitals} />
+      <VitalKpis vitals={sim.vitals} systems={triage.systems} overallLevel={sim.level} />
     </div>
   );
 }
@@ -119,25 +110,15 @@ function Instructions({ sim, big }: { sim: MissionSim; big?: boolean }) {
 }
 
 function AstronautView({ sim, triage }: { sim: MissionSim; triage: Triage }) {
-  const v = sim.vitals;
-  const cards = [
-    {
-      label: "Corazón",
-      value: `${v.hr}`,
-      unit: "lat/min",
-      icon: HeartPulse,
-      warn: v.pvcPerMin > 6,
-    },
-    { label: "Oxígeno en sangre", value: `${v.spo2}`, unit: "%", icon: Wind, warn: v.spo2 < 94 },
-    {
-      label: "Radiación",
-      value: formatRate(v.radRateUSvH),
-      unit: v.radRateUSvH >= 1000 ? "" : "µSv/h",
-      icon: Radiation,
-      warn: v.radRateUSvH > 150000,
-    },
-    { label: "Sueño anoche", value: `${v.sleepEff}`, unit: "%", icon: Moon, warn: false },
-  ];
+  const selectedController = getControllerTelemetry(sim.networkScenario, sim.tick).find(
+    (controller) => controller.selected,
+  );
+  const delivery = getInformationDeliveryStatus(
+    sim.scenario,
+    sim.link,
+    selectedController?.state === "on",
+    selectedController?.earthUplink,
+  );
   return (
     <div className="grid gap-4">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
@@ -185,22 +166,38 @@ function AstronautView({ sim, triage }: { sim: MissionSim; triage: Triage }) {
         <Instructions sim={sim} big />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {cards.map((c) => (
-          <div key={c.label} className={cn("panel p-4", c.warn && LEVEL_SOFT[sim.level])}>
-            <p className="flex items-center gap-2 text-sm text-muted-foreground">
-              <c.icon className={cn("size-4", c.warn ? LEVEL_TEXT[sim.level] : "text-hmi")} />
-              {c.label}
-            </p>
-            <p className="telemetry mt-1 text-3xl font-semibold">
-              {c.value}
-              <span className="ml-1 text-sm font-normal text-muted-foreground">{c.unit}</span>
-            </p>
-          </div>
-        ))}
-      </div>
-
       <AvatarExplorer sim={sim} triage={triage} />
+      <section className="panel grid gap-3 p-4" aria-label="Envío de información">
+        <h2 className="label-caps text-muted-foreground">ENVÍO DE INFORMACIÓN</h2>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {[
+            { label: "Envío a Red Local", on: delivery.localNetwork },
+            { label: "Enlace Estación → Tierra", on: delivery.stationToEarth },
+          ].map((item) => (
+            <div
+              key={item.label}
+              className="flex min-h-12 items-center justify-between gap-3 rounded-lg border border-border bg-background/35 px-3 py-2"
+              role="status"
+              aria-label={`${item.label}: ${item.on ? "ON" : "OFF"}`}
+            >
+              <span className="text-sm font-medium">{item.label}</span>
+              <span
+                className={cn(
+                  "flex items-center gap-1.5 rounded-full border px-2 py-1 text-[0.65rem] font-bold",
+                  item.on
+                    ? "border-nominal/50 bg-nominal/10 text-nominal"
+                    : "border-emergency/50 bg-emergency/10 text-emergency",
+                )}
+              >
+                <span
+                  className={cn("size-2 rounded-full", item.on ? "bg-nominal" : "bg-emergency")}
+                />
+                {item.on ? "ON" : "OFF"}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
       <Countermeasures sim={sim} />
       <TrendPanel scenario={sim.scenario} title="Tendencias Fisiológicas Dinámicas" />
     </div>
@@ -356,106 +353,16 @@ function CmoView({ sim, triage }: { sim: MissionSim; triage: Triage }) {
   );
 }
 
-function SurgeonView({ sim }: { sim: MissionSim }) {
-  const v = sim.vitals;
-  const env = [
-    { label: "ppCO2", value: v.co2.toFixed(1), unit: "mmHg", lim: "< 2.0", warn: v.co2 > 2 },
-    { label: "ppO2", value: v.o2.toFixed(1), unit: "kPa", lim: "19.5–23.1", warn: false },
-    {
-      label: "Presión cabina",
-      value: v.cabinPressure.toFixed(1),
-      unit: "kPa",
-      lim: "101.3",
-      warn: false,
-    },
-    {
-      label: "Radiación cabina",
-      value: formatRate(v.radRateUSvH),
-      unit: v.radRateUSvH >= 1000 ? "" : "µSv/h",
-      lim: "< 50 µSv/h",
-      warn: v.radRateUSvH > 50,
-    },
-    { label: "Temperatura", value: "22.4", unit: "°C", lim: "18–27", warn: false },
-    { label: "Humedad", value: "46", unit: "%", lim: "25–75", warn: false },
-  ];
-  const day = 142;
+function SystemsView({ sim }: { sim: MissionSim }) {
   return (
-    <div className="grid gap-4">
-      <Panel
-        title="Vista longitudinal de la misión"
-        icon={<Gauge className="size-3.5 text-hmi" />}
-        aside={<span className="telemetry text-xs text-muted-foreground">Día {day} / 180</span>}
-      >
-        <div className="h-2 overflow-hidden rounded-full bg-muted">
-          <div className="h-full rounded-full bg-hmi" style={{ width: `${(day / 180) * 100}%` }} />
-        </div>
-        <div className="telemetry mt-2 flex justify-between text-[0.7rem] text-muted-foreground">
-          <span>Lanzamiento</span>
-          <span>EVA #3 · D128</span>
-          <span>Hoy · D{day}</span>
-          <span>Retorno</span>
-        </div>
-      </Panel>
-      <TrendPanel scenario={sim.scenario} title="Evolución crónica de la tripulación" />
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-        <Panel
-          title="Métricas ambientales de cabina (ECLSS)"
-          icon={<Wind className="size-3.5 text-hmi" />}
-        >
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {env.map((e) => (
-              <div
-                key={e.label}
-                className={cn(
-                  "rounded-lg border p-3",
-                  e.warn
-                    ? LEVEL_SOFT[sim.level === "emergency" ? "emergency" : "caution"]
-                    : "border-hairline bg-background/40",
-                )}
-              >
-                <p className="text-xs text-muted-foreground">{e.label}</p>
-                <p className="telemetry text-xl font-semibold">
-                  {e.value}{" "}
-                  <span className="text-xs font-normal text-muted-foreground">{e.unit}</span>
-                </p>
-                <p className="telemetry text-[0.65rem] text-muted-foreground">Límite {e.lim}</p>
-              </div>
-            ))}
-          </div>
-        </Panel>
-        <Panel title="Sincronización con LSAH" icon={<Database className="size-3.5 text-hmi" />}>
-          <dl className="grid gap-2 text-sm">
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Estado</dt>
-              <dd className={cn("font-semibold", sim.link.realtime ? "text-nominal" : "text-dtn")}>
-                {sim.link.realtime ? "Sincronizado" : "En cola DTN"}
-              </dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Último lote</dt>
-              <dd className="telemetry">06:12 UTC</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Bundles entregados</dt>
-              <dd className="telemetry">{sim.dtn.delivered.toLocaleString("es")}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Pendientes</dt>
-              <dd className={cn("telemetry", sim.dtn.queued && "text-dtn")}>
-                {sim.dtn.queued.toLocaleString("es")}
-              </dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Latencia</dt>
-              <dd className="telemetry">{sim.link.latencyLabel}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Formato</dt>
-              <dd className="telemetry">HL7 FHIR R4 Bundle</dd>
-            </div>
-          </dl>
-        </Panel>
-      </div>
+    <div className="grid min-w-0 gap-4">
+      <SensorNetworkTopology
+        tick={sim.tick}
+        selectedScenario={sim.networkScenario}
+        onScenarioChange={sim.setNetworkScenario}
+      />
+      <ArchitectureView sim={sim} />
+      <ReferencesPanel />
     </div>
   );
 }
@@ -463,7 +370,7 @@ function SurgeonView({ sim }: { sim: MissionSim }) {
 export function HmiBlock({ sim, triage }: { sim: MissionSim; triage: Triage }) {
   return (
     <BlockFrame block="hmi" hideHeader>
-      <div className="grid gap-4">
+      <div className="grid min-w-0 gap-4">
         <AlertStack
           alerts={sim.alerts}
           suppressed={sim.suppressed}
@@ -471,10 +378,10 @@ export function HmiBlock({ sim, triage }: { sim: MissionSim; triage: Triage }) {
           triage={triage}
           mission={sim.scenario}
         />
-        <div key={sim.view} className="animate-in fade-in duration-300">
+        <div key={sim.view} className="min-w-0 animate-in fade-in duration-300">
           {sim.view === "astronaut" && <AstronautView sim={sim} triage={triage} />}
           {sim.view === "cmo" && <CmoView sim={sim} triage={triage} />}
-          {sim.view === "surgeon" && <SurgeonView sim={sim} />}
+          {sim.view === "systems" && <SystemsView sim={sim} />}
         </div>
       </div>
     </BlockFrame>

@@ -1,16 +1,19 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   SCENARIOS,
   buildAlerts,
   explain,
   filterAlerts,
   getLinkState,
+  isCriticalPhase,
   overallLevel,
-  type MissionProfile,
+  type MissionPhase,
   type ScenarioId,
   type Vitals,
   type ViewMode,
 } from "@/lib/mission";
+import { TRIAGE_SYSTEMS } from "@/lib/triage";
+import type { SensorNetworkScenarioId } from "@/lib/sensor-network";
 import { useTriage } from "./use-triage";
 
 export interface DtnStats {
@@ -37,6 +40,7 @@ function jitter(v: Vitals, tick: number): Vitals {
     hrv: Math.max(5, Math.round(v.hrv + w(4) * 2)),
     spo2: Math.min(100, Math.round(v.spo2 + w(5) * 0.6)),
     rr: Math.round(v.rr + w(6) * 0.8),
+    temp: Number((v.temp + w(9) * 0.1).toFixed(1)),
     radRateUSvH: Math.max(0.1, v.radRateUSvH * (1 + w(7) * 0.04)),
     co2: Number((v.co2 + w(8) * 0.05).toFixed(2)),
     cumDoseMSv: v.cumDoseMSv,
@@ -44,13 +48,17 @@ function jitter(v: Vitals, tick: number): Vitals {
 }
 
 export function useMissionSim() {
-  const [profile, setProfile] = useState<MissionProfile>("leo");
-  const [marsMinutes, setMarsMinutes] = useState(12);
-  const [scenario, setScenarioState] = useState<ScenarioId>("nominal");
+  const scenario: ScenarioId = "nominal";
   const [view, setView] = useState<ViewMode>("astronaut");
-  const [criticalPhase, setCriticalPhase] = useState(false);
+  const [missionPhase, setMissionPhase] = useState<MissionPhase>("in-flight-adaptation");
+  const [networkScenario, setNetworkScenario] = useState<SensorNetworkScenarioId>("body");
   const [tick, setTick] = useState(0);
-  const [dtn, setDtn] = useState<DtnStats>({ generated: 1284, delivered: 1284, queued: 0, inFlight: 0 });
+  const [dtn, setDtn] = useState<DtnStats>({
+    generated: 1284,
+    delivered: 1284,
+    queued: 0,
+    inFlight: 0,
+  });
   const [counter, setCounter] = useState<Countermeasures>({
     exerciseMin: 84,
     vitaminB: 0,
@@ -58,7 +66,7 @@ export function useMissionSim() {
     sleepEff: 88,
   });
 
-  const link = useMemo(() => getLinkState(profile, marsMinutes), [profile, marsMinutes]);
+  const link = useMemo(() => getLinkState("leo"), []);
 
   useEffect(() => {
     const id = window.setInterval(() => setTick((t) => t + 1), 1000);
@@ -77,41 +85,44 @@ export function useMissionSim() {
         // Lunar: ~1.3 s of bundles in flight, backlog drains
         const inFlight = 5;
         const delivered = Math.min(generated - inFlight, d.delivered + 4 + Math.ceil(d.queued / 2));
-        return { generated, delivered, queued: Math.max(0, generated - delivered - inFlight), inFlight };
+        return {
+          generated,
+          delivered,
+          queued: Math.max(0, generated - delivered - inFlight),
+          inFlight,
+        };
       }
       // Mars: link with Earth cut → custody storage, store-and-forward
       return { generated, delivered: d.delivered, queued: d.queued + 4, inFlight: 0 };
     });
   }, [tick, link.realtime, link.latencySeconds]);
 
-  const setScenario = useCallback((id: ScenarioId) => {
-    setScenarioState(id);
-    setCriticalPhase(id === "eva");
-    if (id === "eva") setView((v) => (v === "surgeon" ? "astronaut" : v));
-  }, []);
-
   const vitals = useMemo(() => jitter(SCENARIOS[scenario].vitals, tick), [scenario, tick]);
   const baseVitals = SCENARIOS[scenario].vitals;
   const alerts = useMemo(() => buildAlerts(baseVitals, link), [baseVitals, link]);
+  const triage = useTriage(scenario, baseVitals);
+  const criticalPhase = isCriticalPhase(
+    missionPhase,
+    scenario,
+    alerts.some((alert) => alert.level === "emergency"),
+    TRIAGE_SYSTEMS.some((system) => triage.systems[system].level === "red"),
+  );
   const { visible, suppressed } = useMemo(
     () => filterAlerts(alerts, { criticalPhase }),
     [alerts, criticalPhase],
   );
   const level = overallLevel(visible);
   const xai = useMemo(() => explain(scenario, baseVitals), [scenario, baseVitals]);
-  const triage = useTriage(scenario, baseVitals);
 
   return {
-    profile,
-    setProfile,
-    marsMinutes,
-    setMarsMinutes,
     scenario,
-    setScenario,
+    missionPhase,
+    setMissionPhase,
     view,
     setView,
+    networkScenario,
+    setNetworkScenario,
     criticalPhase,
-    setCriticalPhase,
     tick,
     link,
     dtn,

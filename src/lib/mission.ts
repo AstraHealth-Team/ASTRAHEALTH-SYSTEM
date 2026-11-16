@@ -7,8 +7,20 @@ export type MissionProfile = "leo" | "lunar" | "mars";
 export type ScenarioId = "nominal" | "eva" | "spe";
 export type AlertLevel = "emergency" | "warning" | "caution" | "advisory";
 export type HealthLevel = AlertLevel | "nominal";
-export type ViewMode = "astronaut" | "cmo" | "surgeon";
+export type ViewMode = "astronaut" | "cmo" | "systems";
+export type MissionPhase = "microgravity-entry" | "in-flight-adaptation" | "return";
 export type SystemId = "cardio" | "neuro" | "resp" | "radiation" | "msk";
+
+export function isCriticalPhase(
+  phase: MissionPhase,
+  scenario: ScenarioId,
+  emergencyActive: boolean,
+  redTriageActive: boolean,
+): boolean {
+  return (
+    phase !== "in-flight-adaptation" || scenario === "eva" || emergencyActive || redTriageActive
+  );
+}
 
 export const ALERT_PRIORITY: Record<AlertLevel, number> = {
   emergency: 0,
@@ -86,6 +98,24 @@ export function getLinkState(profile: MissionProfile, marsMinutes = 12): LinkSta
     realtime: false,
     localAutonomy: true,
     modeLabel: "Autonomía Médica Local + Cola DTN Store-and-Forward",
+  };
+}
+
+export interface InformationDeliveryStatus {
+  localNetwork: boolean;
+  stationToEarth: boolean;
+}
+
+export function getInformationDeliveryStatus(
+  scenario: ScenarioId,
+  link: LinkState,
+  controllerOnline = true,
+  earthUplinkEnabled = true,
+): InformationDeliveryStatus {
+  return {
+    localNetwork: controllerOnline && (scenario !== "eva" || link.localAutonomy),
+    stationToEarth:
+      controllerOnline && earthUplinkEnabled && scenario === "nominal" && link.realtime,
   };
 }
 
@@ -209,11 +239,7 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
       co2: 3.1,
       suitO2: 71,
     },
-    instructions: [
-      "Reducir tasa metabólica.",
-      "Pausar caminata EVA.",
-      "Verificar O2 del traje.",
-    ],
+    instructions: ["Reducir tasa metabólica.", "Pausar caminata EVA.", "Verificar O2 del traje."],
   },
   spe: {
     id: "spe",
@@ -420,38 +446,131 @@ export function systemComparison(system: SystemId, v: Vitals): ComparisonRow[] {
   switch (system) {
     case "cardio":
       return [
-        { label: "Frecuencia cardíaca", unit: "bpm", earth: `${e.hr}`, space: `${v.hr}`, flag: v.hr > 110 ? "caution" : undefined },
-        { label: "Presión arterial", unit: "mmHg", earth: `${e.sys}/${e.dia}`, space: `${v.sys}/${v.dia}`, flag: v.sys > 140 ? "caution" : undefined },
-        { label: "HRV (RMSSD)", unit: "ms", earth: `${e.hrv}`, space: `${v.hrv}`, flag: v.hrv < 25 ? "caution" : undefined },
-        { label: "Extrasístoles (PVC)", unit: "/min", earth: "0", space: `${v.pvcPerMin}`, flag: v.pvcPerMin > PVC_WARNING_THRESHOLD ? "warning" : undefined },
-        { label: "Cefalización de fluidos", unit: "L", earth: "0.0", space: "~1.8", flag: "advisory" },
+        {
+          label: "Frecuencia cardíaca",
+          unit: "bpm",
+          earth: `${e.hr}`,
+          space: `${v.hr}`,
+          flag: v.hr > 110 ? "caution" : undefined,
+        },
+        {
+          label: "Presión arterial",
+          unit: "mmHg",
+          earth: `${e.sys}/${e.dia}`,
+          space: `${v.sys}/${v.dia}`,
+          flag: v.sys > 140 ? "caution" : undefined,
+        },
+        {
+          label: "HRV (RMSSD)",
+          unit: "ms",
+          earth: `${e.hrv}`,
+          space: `${v.hrv}`,
+          flag: v.hrv < 25 ? "caution" : undefined,
+        },
+        {
+          label: "Extrasístoles (PVC)",
+          unit: "/min",
+          earth: "0",
+          space: `${v.pvcPerMin}`,
+          flag: v.pvcPerMin > PVC_WARNING_THRESHOLD ? "warning" : undefined,
+        },
+        {
+          label: "Cefalización de fluidos",
+          unit: "L",
+          earth: "0.0",
+          space: "~1.8",
+          flag: "advisory",
+        },
       ];
     case "neuro":
       return [
         { label: "Espesor RNFL", unit: "µm", earth: `${e.rnfl}`, space: `${v.rnfl}` },
-        { label: "Presión intraocular", unit: "mmHg", earth: `${e.iop}`, space: `${v.iop}`, flag: v.iop > 21 ? "caution" : undefined },
-        { label: "Desplazamiento hiperópico", unit: "D", earth: "+0.00", space: `+${v.refractiveShiftD.toFixed(2)}`, flag: v.refractiveShiftD >= 0.75 ? "warning" : v.refractiveShiftD >= 0.5 ? "caution" : undefined },
+        {
+          label: "Presión intraocular",
+          unit: "mmHg",
+          earth: `${e.iop}`,
+          space: `${v.iop}`,
+          flag: v.iop > 21 ? "caution" : undefined,
+        },
+        {
+          label: "Desplazamiento hiperópico",
+          unit: "D",
+          earth: "+0.00",
+          space: `+${v.refractiveShiftD.toFixed(2)}`,
+          flag:
+            v.refractiveShiftD >= 0.75
+              ? "warning"
+              : v.refractiveShiftD >= 0.5
+                ? "caution"
+                : undefined,
+        },
         { label: "Umbral SANS", unit: "D", earth: "—", space: "≥ +0.75" },
       ];
     case "resp":
       return [
-        { label: "Saturación O2 (SpO2)", unit: "%", earth: `${e.spo2}`, space: `${v.spo2}`, flag: v.spo2 < 90 ? "emergency" : v.spo2 < 94 ? "caution" : undefined },
-        { label: "Frecuencia respiratoria", unit: "/min", earth: `${e.rr}`, space: `${v.rr}`, flag: v.rr > 22 ? "caution" : undefined },
-        { label: "ppCO2 cabina", unit: "mmHg", earth: `${e.co2}`, space: v.co2.toFixed(1), flag: v.co2 > 3 ? "caution" : undefined },
-        { label: "O2 del traje (EMU)", unit: "%", earth: "100", space: `${v.suitO2}`, flag: v.suitO2 < 80 ? "warning" : undefined },
+        {
+          label: "Saturación O2 (SpO2)",
+          unit: "%",
+          earth: `${e.spo2}`,
+          space: `${v.spo2}`,
+          flag: v.spo2 < 90 ? "emergency" : v.spo2 < 94 ? "caution" : undefined,
+        },
+        {
+          label: "Frecuencia respiratoria",
+          unit: "/min",
+          earth: `${e.rr}`,
+          space: `${v.rr}`,
+          flag: v.rr > 22 ? "caution" : undefined,
+        },
+        {
+          label: "ppCO2 cabina",
+          unit: "mmHg",
+          earth: `${e.co2}`,
+          space: v.co2.toFixed(1),
+          flag: v.co2 > 3 ? "caution" : undefined,
+        },
+        {
+          label: "O2 del traje (EMU)",
+          unit: "%",
+          earth: "100",
+          space: `${v.suitO2}`,
+          flag: v.suitO2 < 80 ? "warning" : undefined,
+        },
       ];
     case "radiation":
       return [
-        { label: "Tasa instantánea", unit: "µSv/h", earth: `${e.radRateUSvH}`, space: formatRate(v.radRateUSvH), flag: v.radRateUSvH > SPE_EMERGENCY_USVH ? "emergency" : undefined },
+        {
+          label: "Tasa instantánea",
+          unit: "µSv/h",
+          earth: `${e.radRateUSvH}`,
+          space: formatRate(v.radRateUSvH),
+          flag: v.radRateUSvH > SPE_EMERGENCY_USVH ? "emergency" : undefined,
+        },
         { label: "Dosis acumulada", unit: "mSv", earth: "2.4/año", space: v.cumDoseMSv.toFixed(1) },
-        { label: "Flujo neutrones (CANS)", unit: "n/cm²·s", earth: `${e.neutronFlux}`, space: v.neutronFlux.toFixed(3), flag: v.neutronFlux > 1 ? "emergency" : undefined },
+        {
+          label: "Flujo neutrones (CANS)",
+          unit: "n/cm²·s",
+          earth: `${e.neutronFlux}`,
+          space: v.neutronFlux.toFixed(3),
+          flag: v.neutronFlux > 1 ? "emergency" : undefined,
+        },
         { label: "Límite carrera NASA", unit: "mSv", earth: "—", space: "600" },
       ];
     case "msk":
       return [
         { label: "Eficiencia de sueño", unit: "%", earth: `${e.sleepEff}`, space: `${v.sleepEff}` },
-        { label: "Fatiga pupilar", unit: "idx", earth: `${e.pupilFatigue}`, space: `${v.pupilFatigue}` },
-        { label: "Pérdida densidad ósea", unit: "%/mes", earth: "0.0", space: v.boneLossPct.toFixed(1) },
+        {
+          label: "Fatiga pupilar",
+          unit: "idx",
+          earth: `${e.pupilFatigue}`,
+          space: `${v.pupilFatigue}`,
+        },
+        {
+          label: "Pérdida densidad ósea",
+          unit: "%/mes",
+          earth: "0.0",
+          space: v.boneLossPct.toFixed(1),
+        },
         { label: "Masa muscular (cuádriceps)", unit: "%", earth: "100", space: "96.8" },
       ];
   }
@@ -484,10 +603,22 @@ export function explain(scenario: ScenarioId, v: Vitals): XaiResult {
       reconstructionError: 0.21,
       threshold: 0.08,
       factors: [
-        { name: "Elevación de PVCs", weight: 0.48, detail: `${v.pvcPerMin}/min (> ${PVC_WARNING_THRESHOLD})` },
-        { name: "Frecuencia cardíaca", weight: 0.27, detail: `${v.hr} bpm (+${v.hr - NOMINAL_VITALS.hr})` },
+        {
+          name: "Elevación de PVCs",
+          weight: 0.48,
+          detail: `${v.pvcPerMin}/min (> ${PVC_WARNING_THRESHOLD})`,
+        },
+        {
+          name: "Frecuencia cardíaca",
+          weight: 0.27,
+          detail: `${v.hr} bpm (+${v.hr - NOMINAL_VITALS.hr})`,
+        },
         { name: "QRS ensanchado", weight: 0.15, detail: "0.14 s en latidos ectópicos" },
-        { name: "Carga metabólica EVA", weight: 0.1, detail: `FR ${v.rr}/min · O2 traje ${v.suitO2}%` },
+        {
+          name: "Carga metabólica EVA",
+          weight: 0.1,
+          detail: `FR ${v.rr}/min · O2 traje ${v.suitO2}%`,
+        },
       ],
     };
   }
@@ -499,7 +630,11 @@ export function explain(scenario: ScenarioId, v: Vitals): XaiResult {
       reconstructionError: 0.34,
       threshold: 0.08,
       factors: [
-        { name: "Tasa ISS-RAD", weight: 0.55, detail: `${formatRate(v.radRateUSvH)} (> 150 mSv/h)` },
+        {
+          name: "Tasa ISS-RAD",
+          weight: 0.55,
+          detail: `${formatRate(v.radRateUSvH)} (> 150 mSv/h)`,
+        },
         { name: "Neutrones CANS", weight: 0.3, detail: `${v.neutronFlux.toFixed(1)} n/cm²·s` },
         { name: "Radi-N2 burbujas", weight: 0.1, detail: "Saturación de detectores" },
         { name: "FC por estrés", weight: 0.05, detail: `${v.hr} bpm` },
@@ -553,9 +688,17 @@ export function trendSeries(range: TrendRange, scenario: ScenarioId) {
         : NOMINAL_VITALS.rnfl;
     const baseRnfl = rnflBaseline + Math.sin(p * Math.PI * 2) * 0.8 + (n - 0.5) * 0.6;
     const rnfl = baseRnfl + (v.rnfl - NOMINAL_VITALS.rnfl) * acute;
-    const doseBase = range === "30d" ? 30 + p * 12.6 : NOMINAL_VITALS.cumDoseMSv - (1 - p) * (range === "1h" ? 0.02 : 0.4);
+    const doseBase =
+      range === "30d"
+        ? 30 + p * 12.6
+        : NOMINAL_VITALS.cumDoseMSv - (1 - p) * (range === "1h" ? 0.02 : 0.4);
     const dose = doseBase + (v.cumDoseMSv - NOMINAL_VITALS.cumDoseMSv) * acute;
-    out.push({ t: label, hr: Math.round(hr), rnfl: Number(rnfl.toFixed(1)), dose: Number(dose.toFixed(2)) });
+    out.push({
+      t: label,
+      hr: Math.round(hr),
+      rnfl: Number(rnfl.toFixed(1)),
+      dose: Number(dose.toFixed(2)),
+    });
   }
   return out;
 }

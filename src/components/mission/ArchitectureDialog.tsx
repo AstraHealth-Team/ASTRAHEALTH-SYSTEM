@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { ALERT_LABEL, SCENARIOS, type AlertLevel } from "@/lib/mission";
 import type { MissionSim } from "@/hooks/use-mission-sim";
@@ -34,7 +33,7 @@ const NODES: Record<BlockKey, Box[]> = {
   ],
   hmi: [
     { id: "astro", x: 1653, y: 89, w: 164, h: 80, lines: ["Modo Astronauta", "(Semáforo +", "Gamificación)"] },
-    { id: "cmo", x: 1649, y: 218, w: 182, h: 60, lines: ["Modo CMO", "(Ondas + Guía EVA)"] },
+    { id: "cmo", x: 1649, y: 218, w: 182, h: 60, lines: ["Modo Médico", "(Ondas + Guía EVA)"] },
     { id: "alerts", x: 1649, y: 327, w: 143, h: 80, lines: ["Alertas Duales", "(Emergency /", "Warning)"] },
   ],
 };
@@ -62,6 +61,7 @@ function activeNodes(sim: MissionSim): Set<string> {
   const s = new Set<string>(["biomon", "gw", "wavelet", "tinyml", "xai"]);
   if (sim.view === "astronaut") s.add("astro");
   if (sim.view === "cmo") s.add("cmo");
+  if (sim.view === "systems") s.add("alerts");
   if (sim.scenario === "eva") ["cmo", "alerts"].forEach((x) => s.add(x));
   if (sim.scenario === "spe") ["rad", "alerts"].forEach((x) => s.add(x));
   if (sim.link.localAutonomy) s.add("queue");
@@ -213,7 +213,7 @@ function usePayloads(sim: MissionSim) {
     const top = sim.alerts[0];
     const hmi = {
       standard: "NASA-STD-3001 Vol. 2 · Dual Coding",
-      view: sim.view === "astronaut" ? "Modo Astronauta" : sim.view === "cmo" ? "Modo CMO" : "Cirujano de Vuelo (MCC)",
+      view: sim.view === "astronaut" ? "Modo Astronauta" : sim.view === "cmo" ? "Modo Médico" : "Modo Sistemas",
       scenario: SCENARIOS[sim.scenario].title,
       activeAlert: top
         ? { level: ALERT_LABEL[top.level], color: HEX[top.level], icon: ICON[top.level], label: top.title, blink: top.level === "emergency" }
@@ -232,7 +232,7 @@ const TABS: { key: "ieee" | "bundle" | "fhir" | "hmi"; block: BlockKey; label: s
   { key: "hmi", block: "hmi", label: "Alerta HMI · NASA-STD-3001" },
 ];
 
-export function ArchitectureDialog({ open, onOpenChange, sim }: { open: boolean; onOpenChange: (o: boolean) => void; sim: MissionSim }) {
+export function ArchitectureView({ sim }: { sim: MissionSim }) {
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("fhir");
   const payloads = usePayloads(sim);
   const current = TABS.find((t) => t.key === tab)!;
@@ -243,16 +243,15 @@ export function ArchitectureDialog({ open, onOpenChange, sim }: { open: boolean;
     hmi: sim.alerts[0] ? `${ALERT_LABEL[sim.alerts[0].level]} · ${sim.alerts[0].title}` : "Sin alertas",
   };
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92vh] max-w-[min(96vw,1280px)] overflow-y-auto border-hairline bg-popover p-4 sm:p-6">
-        <DialogHeader>
-          <DialogTitle className="text-xl">Arquitectura técnica · flujo de datos en tiempo real</DialogTitle>
-          <DialogDescription>
-            Flujo completo: Sensores IEEE 11073 → Red Espacial DTN → Edge AI y HL7 FHIR R4 → Interfaz HMI NASA-STD-3001.
-          </DialogDescription>
-        </DialogHeader>
+    <section className="panel grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 p-4 sm:p-5" aria-labelledby="architecture-heading">
+        <header className="min-w-0">
+          <h2 id="architecture-heading" className="text-lg font-semibold">Arquitectura técnica · flujo de datos en tiempo real</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Sensores IEEE 11073 → Red Espacial DTN → Edge AI y HL7 FHIR R4 → Interfaz HMI NASA-STD-3001.
+          </p>
+        </header>
 
-        <div className="overflow-x-auto rounded-xl border border-hairline">
+        <div className="min-w-0 overflow-x-auto rounded-xl border border-hairline">
           <Diagram sim={sim} />
         </div>
 
@@ -290,7 +289,6 @@ export function ArchitectureDialog({ open, onOpenChange, sim }: { open: boolean;
             {JSON.stringify(payloads[tab], null, 2)}
           </pre>
         </div>
-      </DialogContent>
-    </Dialog>
+    </section>
   );
 }

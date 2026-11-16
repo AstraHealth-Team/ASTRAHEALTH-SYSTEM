@@ -4,6 +4,8 @@ import {
   buildAlerts,
   filterAlerts,
   getLinkState,
+  getInformationDeliveryStatus,
+  isCriticalPhase,
   overallLevel,
   systemLevel,
   trendSeries,
@@ -30,11 +32,58 @@ describe("mission latency profiles", () => {
   });
 });
 
+describe("information delivery status", () => {
+  it("keeps local and Earth transmission active during nominal real-time operations", () => {
+    expect(getInformationDeliveryStatus("nominal", getLinkState("leo"))).toEqual({
+      localNetwork: true,
+      stationToEarth: true,
+    });
+  });
+
+  it("turns off links during EVA contingency while preserving local autonomy on Mars", () => {
+    expect(getInformationDeliveryStatus("eva", getLinkState("leo"))).toEqual({
+      localNetwork: false,
+      stationToEarth: false,
+    });
+    expect(getInformationDeliveryStatus("eva", getLinkState("mars"))).toEqual({
+      localNetwork: true,
+      stationToEarth: false,
+    });
+  });
+
+  it("keeps local delivery during solar-storm or disconnected-link operation", () => {
+    expect(getInformationDeliveryStatus("spe", getLinkState("leo"))).toEqual({
+      localNetwork: true,
+      stationToEarth: false,
+    });
+    expect(getInformationDeliveryStatus("nominal", getLinkState("mars"))).toEqual({
+      localNetwork: true,
+      stationToEarth: false,
+    });
+  });
+
+  it("turns both indicators off when the selected controller is not operational", () => {
+    expect(getInformationDeliveryStatus("nominal", getLinkState("leo"), false)).toEqual({
+      localNetwork: false,
+      stationToEarth: false,
+    });
+  });
+
+  it("keeps local delivery but disables Earth uplink for a local analysis topology", () => {
+    expect(getInformationDeliveryStatus("nominal", getLinkState("leo"), true, false)).toEqual({
+      localNetwork: true,
+      stationToEarth: false,
+    });
+  });
+});
+
 describe("operational scenarios", () => {
   const leo = getLinkState("leo");
 
   it("routine scenario reads as nominal", () => {
-    const { visible } = filterAlerts(buildAlerts(SCENARIOS.nominal.vitals, leo), { criticalPhase: false });
+    const { visible } = filterAlerts(buildAlerts(SCENARIOS.nominal.vitals, leo), {
+      criticalPhase: false,
+    });
     expect(overallLevel(visible)).toBe("nominal");
   });
 
@@ -70,24 +119,47 @@ describe("contextual alert suppression", () => {
   });
 
   it("without critical phase or emergency, advisories are shown", () => {
-    const { visible } = filterAlerts(buildAlerts(SCENARIOS.nominal.vitals, mars), { criticalPhase: false });
+    const { visible } = filterAlerts(buildAlerts(SCENARIOS.nominal.vitals, mars), {
+      criticalPhase: false,
+    });
     expect(visible.some((a) => a.level === "advisory")).toBe(true);
   });
 });
 
-describe("physiological trend series", () => {
-  it.each(["1h", "24h", "30d"] as const)("includes RNFL and reflects the active scenario at %s", (range) => {
-    const nominal = trendSeries(range, "nominal").at(-1)!;
-    const eva = trendSeries(range, "eva").at(-1)!;
-    const spe = trendSeries(range, "spe").at(-1)!;
-
-    expect(eva.hr - nominal.hr).toBe(SCENARIOS.eva.vitals.hr - SCENARIOS.nominal.vitals.hr);
-    expect(eva.rnfl).toBeDefined();
-    expect(eva.rnfl - nominal.rnfl).toBe(SCENARIOS.eva.vitals.rnfl - SCENARIOS.nominal.vitals.rnfl);
-    expect(spe.dose - nominal.dose).toBeCloseTo(SCENARIOS.spe.vitals.cumDoseMSv - SCENARIOS.nominal.vitals.cumDoseMSv);
-
-    if (range === "30d") {
-      expect(nominal.rnfl).toBeGreaterThan(trendSeries(range, "nominal")[0].rnfl);
-    }
+describe("automatic critical-phase status", () => {
+  it("marks transitions, emergencies, EVA, and red triage as critical without a manual switch", () => {
+    expect(isCriticalPhase("microgravity-entry", "nominal", false, false)).toBe(true);
+    expect(isCriticalPhase("return", "nominal", false, false)).toBe(true);
+    expect(isCriticalPhase("in-flight-adaptation", "eva", false, false)).toBe(true);
+    expect(isCriticalPhase("in-flight-adaptation", "nominal", true, false)).toBe(true);
+    expect(isCriticalPhase("in-flight-adaptation", "nominal", false, true)).toBe(true);
   });
+
+  it("keeps the normal adaptation phase passive when there is no critical event", () => {
+    expect(isCriticalPhase("in-flight-adaptation", "nominal", false, false)).toBe(false);
+  });
+});
+
+describe("physiological trend series", () => {
+  it.each(["1h", "24h", "30d"] as const)(
+    "includes RNFL and reflects the active scenario at %s",
+    (range) => {
+      const nominal = trendSeries(range, "nominal").at(-1)!;
+      const eva = trendSeries(range, "eva").at(-1)!;
+      const spe = trendSeries(range, "spe").at(-1)!;
+
+      expect(eva.hr - nominal.hr).toBe(SCENARIOS.eva.vitals.hr - SCENARIOS.nominal.vitals.hr);
+      expect(eva.rnfl).toBeDefined();
+      expect(eva.rnfl - nominal.rnfl).toBe(
+        SCENARIOS.eva.vitals.rnfl - SCENARIOS.nominal.vitals.rnfl,
+      );
+      expect(spe.dose - nominal.dose).toBeCloseTo(
+        SCENARIOS.spe.vitals.cumDoseMSv - SCENARIOS.nominal.vitals.cumDoseMSv,
+      );
+
+      if (range === "30d") {
+        expect(nominal.rnfl).toBeGreaterThan(trendSeries(range, "nominal")[0].rnfl);
+      }
+    },
+  );
 });

@@ -1,4 +1,4 @@
-import { BellOff, Download, RotateCcw, Stethoscope } from "lucide-react";
+import { BellOff, Download, Stethoscope } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ALERT_LABEL, SCENARIOS, type Alert, type ScenarioId } from "@/lib/mission";
 import {
@@ -44,7 +44,7 @@ export function AlertStack({
   };
 
   return (
-    <div className="grid gap-3" aria-live="polite">
+    <div className="grid min-w-0 gap-3" aria-live="polite">
       {alerts.map((a) => (
         <div
           key={a.id}
@@ -158,54 +158,6 @@ export function AlertStack({
           </div>
 
           <div className="grid content-start gap-3">
-            <div>
-              <h3 className="label-caps mb-2 text-muted-foreground">Historial de cambios</h3>
-              {triage.history.length === 0 ? (
-                <p className="rounded-lg border border-dashed border-border px-3 py-4 text-xs text-muted-foreground">
-                  Sin cambios registrados; telemetría nominal.
-                </p>
-              ) : (
-                <ol className="grid max-h-52 gap-1 overflow-y-auto pr-1">
-                  {triage.history.slice(0, 10).map((entry) => (
-                    <li
-                      key={entry.id}
-                      className="flex items-start gap-2 rounded-md bg-background/30 px-2 py-1.5 text-xs"
-                    >
-                      <span
-                        className={cn(
-                          "mt-0.5 size-2 shrink-0 rounded-full",
-                          entry.level === "red"
-                            ? "bg-emergency"
-                            : entry.level === "yellow"
-                              ? "bg-warning"
-                              : "bg-nominal",
-                        )}
-                      />
-                      <span className="min-w-0 flex-1">
-                        <span className="font-semibold">{TRIAGE_META[entry.system].title}</span> ·{" "}
-                        {LEVEL_NAME[entry.level]} — {entry.finding}
-                      </span>
-                      <time className="telemetry shrink-0 text-[0.65rem] text-muted-foreground">
-                        {new Date(entry.at).toLocaleTimeString("es", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </time>
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </div>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={triage.resetAll}
-                className="flex min-h-11 items-center justify-center gap-2 rounded-lg border border-nominal/50 bg-nominal/10 px-3 text-xs font-semibold text-nominal transition-colors hover:bg-nominal/20 sm:col-span-2"
-              >
-                <RotateCcw className="size-4" />
-                Restablecer Todo a Verde
-              </button>
-            </div>
             <p className="text-[0.68rem] leading-relaxed text-muted-foreground">
               Reporte descargable con fecha/hora, estado por sistema, recomendaciones, historial y
               transcripción de la consulta.

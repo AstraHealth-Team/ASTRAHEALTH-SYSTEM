@@ -1,5 +1,3 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
 export const REFERENCES = [
   { org: "NASA", ref: "NASA-STD-3001 Vol. 2", desc: "Human Factors, Habitability, and Environmental Health — codificación de alertas, legibilidad y ergonomía de controles." },
   { org: "NASA", ref: "NASA-STD-3001 Vol. 1", desc: "Crew Health — límites de exposición a radiación y estándares de salud de la tripulación." },
@@ -14,29 +12,31 @@ export const REFERENCES = [
   { org: "CCSDS", ref: "Space Packet Protocol", desc: "Encapsulado de telemetría espacial para enlaces nave–Tierra." },
 ];
 
-export function ReferencesDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+export function ReferencesPanel() {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[88vh] max-w-2xl overflow-y-auto border-hairline bg-popover">
-        <DialogHeader>
-          <DialogTitle>Rigor científico y referencias</DialogTitle>
-          <DialogDescription>Normas y programas que fundamentan cada módulo del prototipo.</DialogDescription>
-        </DialogHeader>
-        <ul className="grid gap-2">
-          {REFERENCES.map((r) => (
-            <li key={r.ref} className="rounded-lg border border-hairline bg-background/40 p-3">
-              <p className="flex items-baseline gap-2">
-                <span className="label-caps text-hmi">{r.org}</span>
-                <span className="text-sm font-semibold">{r.ref}</span>
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">{r.desc}</p>
-            </li>
-          ))}
-        </ul>
-        <p className="text-[0.7rem] text-muted-foreground">
-          Prototipo MVP de evaluación. Los valores son simulados y no constituyen diagnóstico médico.
+    <section className="panel grid gap-3 p-4" aria-labelledby="scientific-references-heading">
+      <header>
+        <h2 id="scientific-references-heading" className="label-caps text-foreground">
+          RIGOR CIENTÍFICO · REFERENCIAS
+        </h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Normas y programas que fundamentan los módulos del sistema.
         </p>
-      </DialogContent>
-    </Dialog>
+      </header>
+      <ul className="grid gap-2 sm:grid-cols-2">
+        {REFERENCES.map((reference) => (
+          <li key={reference.ref} className="rounded-lg border border-hairline bg-background/40 p-3">
+            <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className="label-caps text-hmi">{reference.org}</span>
+              <span className="text-sm font-semibold">{reference.ref}</span>
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{reference.desc}</p>
+          </li>
+        ))}
+      </ul>
+      <p className="text-[0.7rem] text-muted-foreground">
+        Prototipo MVP de evaluación. Los valores son simulados y no constituyen diagnóstico médico.
+      </p>
+    </section>
   );
 }
