@@ -1,140 +1,126 @@
-# 🚀 AstraHealth System — Plataforma de Procesamiento de Información Médica y Soporte Clínico Espacial
+# 🚀 AstraHealth System — Medical Information Processing & Space Clinical Support Platform
 
-**Simulación Web Interactiva en Vivo:** [https://www.astrahealth.earth/](https://www.astrahealth.earth/)
+**Live Interactive Web Simulation:** <https://www.astrahealth.earth/>
 
----
+## Overview
 
-## Descripción General
+**AstraHealth System** is a comprehensive aerospace Human-Machine Interface (HMI) software platform, autonomous biomedical processing, and clinical decision support system designed for deep-space and long-duration exploration missions.
 
-**AstraHealth System** es una plataforma integral de software de Interfaz Hombre-Máquina (HMI) aeroespacial, procesamiento biomédico autónomo y soporte a decisiones clínicas proyectada para misiones espaciales de exploración profunda y larga duración. 
+During spaceflight, the crew is exposed to severe physiological stressors—such as microgravity, ionizing radiation, prolonged mechanical unloading, and circadian desynchronization. Due to communication delays with Earth, traditional real-time telemedicine becomes unfeasible. **AstraHealth** overcomes this limitation through an autonomous two-tier computational architecture powered by artificial intelligence, semiological clinical decision algorithms, and a multi-modular interface aimed at preventing cognitive overload and eliminating diagnostic and treatment false positives.
 
-Durante el vuelo espacial, la tripulación está expuesta a estresores fisiológicos severos —como microgravedad, radiación ionizante, descarga mecánica prolongada y desincronización circadiana—. Ante el retardo en las comunicaciones con la Tierra, la telemedicina tradicional en tiempo real resulta inviable. **AstraHealth** resuelve esta limitación mediante una arquitectura computacional autónoma de dos niveles impulsada por inteligencia artificial, algoritmos de decisión clínica semiológica y una interfaz multimodular orientada a prevenir la sobrecarga cognitiva y eliminar falsos positivos de diagnóstico y tratamiento.
+## Technical and Scientific Documentation (`docs/` Folder)
 
----
+> **LOCATION OF TECHNICAL DOCUMENTATION:**
+>
+> When browsing this repository, you will notice that the executable source code for the HMI interface (`src/`) is located in the root directory to facilitate building, packaging, and deploying the system. However, all the scientific, mathematical, clinical, networking, and algorithmic foundations supporting AstraHealth's logic are preserved in the `docs/` folder. Reviewing the files inside `docs/` is recommended to understand the pathophysiological framework, risk matrix, and computational architecture of the system.
 
-## Documentación Técnica y Científica (Carpeta `docs/`)
-
-> **UBICACIÓN DE LA DOCUMENTACIÓN TÉCNICA:**  
-> Al navegar por este repositorio, notarás que el código fuente ejecutable de la interfaz HMI (`src/`) se encuentra ubicado en el directorio raíz para facilitar la compilación, empaquetado y despliegue del sistema. Sin embargo, toda la fundamentación científica, matemática, clínica, de redes y de algoritmos que sustenta la lógica de AstraHealth se encuentra preservada en la carpeta `docs/`. Se recomienda revisar los archivos de `docs/` para comprender el marco fisiopatológico, la matriz de riesgos y la arquitectura computacional del sistema.
-
-### Estructura y Contenido de `docs/`:
+### Structure and Contents of `docs/`:
 
 ```text
 docs/
-├── DOC_Clinical_Decision_Algorithms.pdf         # Algoritmos de decisión clínica, reglas de vuelo y manejo por niveles de severidad.
-├── DOC_Mechanism_and_information_processing.pdf # Mecanismos de procesamiento en 2 niveles (Reglas + Redes Neuronales Metamodelo/PTRS).
-├── DOC_Networks_and_connections.pdf             # Arquitectura de redes, topología de controladores (Body, Suit, Analysis Center) e interconexión.
-├── DOC_risks_indicators_and_devices.pdf         # Matriz de 7 fenómenos espaciales, riesgos fisiológicos, indicadores biomédicos y catálogo de dispositivos.
-├── FINAL_REPORT.pdf                             # Reporte técnico final e integral del proyecto AstraHealth.
-├── README.md                                    # Documentación detallada del acervo científico del sistema.
-└── REPORTE_INTERFACE_INGLES.docx.pdf            # Especificación y diseño de la interfaz de usuario multimodular (reporte en inglés).
+├── DOC_Clinical_Decision_Algorithms.pdf         # Clinical decision algorithms, flight rules, and severity-level management.
+├── DOC_Mechanism_and_information_processing.pdf # 2-tier processing mechanisms (Rules + Metamodel/PTRS Neural Networks).
+├── DOC_Networks_and_connections.pdf             # Network architecture, controller topology (Body, Suit, Analysis Center), and interconnection.
+├── DOC_risks_indicators_and_devices.pdf         # Matrix of 7 space phenomena, physiological risks, biomedical indicators, and device catalog.
+├── FINAL_REPORT.pdf                             # Final and comprehensive technical report of the AstraHealth project.
+├── README.md                                    # Detailed documentation of the system's scientific repository.
+└── REPORTE_INTERFACE_INGLES.docx.pdf            # Multi-modular user interface specification and design (English report).
 ```
 
----
+## System Architecture and Technical Foundations
 
-## Arquitectura del Sistema y Fundamentos Técnicos
+### 1. Operational Matrix of Risks and Biomedical Devices
 
-### 1. Matriz Operativa de Riesgos y Dispositivos Biomédicos
+The system categorizes space stressors into **7 critical domains** (microgravity and fluid shift, space ionizing radiation, zero-G mechanical unloading, isolation and circadian desynchronization, immunological stress, atmospheric variation/hypoxia during EVA, and telemetry delay), distributing biomedical data capture across three technological scenarios:
 
-El sistema categoriza los estresores espaciales en **7 dominios críticos** (microgravedad y desplazamiento de fluidos, radiación ionizante espacial, descarga mecánica en cero-G, aislamiento y desincronización circadiana, estrés inmunológico, variación atmosférica/hipoxia en EVA y retardo telemétrico), distribuyendo la captura biomédica en tres escenarios tecnológicos:
+* **In-Suit Devices (EVA):** MOSFET EVARM dosimeters, helmet micro-capnographs, and optical pulse and $\text{SpO}_2$ sensors.
+* **Suitless Wearable Devices (IVA):** Astroskin smart shirt, ARCHER digital actigraphy monitors, and venous thigh cuffs (*Thigh Cuffs*).
+* **Analysis Center (Space Station):** Optical Coherence Tomography (OCT), miniaturized flow cytometer rHEALTH One, MicroPREP microfluidic laboratory, and 3D vascular Doppler ultrasound.
 
-* **Dispositivos en Traje (EVA):** Dosímetros MOSFET EVARM, microcapnógrafos de casco y sensores ópticos de pulso y $\text{SpO}_2$.
-* **Dispositivos Vestibles sin Traje (IVA):** Camiseta inteligente Astroskin, monitores de actigrafía digital ARCHER y oclusores venosos de muslo (*Thigh Cuffs*).
-* **Centro de Análisis (Estación Espacial):** Tomografía de Coherencia Óptica (OCT), citómetro de flujo miniaturizado rHEALTH One, laboratorio microfluídico MicroPREP y ultrasonido Doppler vascular 3D.
+### 2. Two-Tier Information Processing Mechanism
 
-### 2. Mecanismo de Procesamiento de Información en Dos Niveles
+* **Diagnostic Functional Sequence:**
+  * **Tier 01:** Parallel analytical evaluation using a conditional medical rules engine, statistical and probabilistic models, and temporal analysis against the astronaut's baseline.
+  * **Tier 02:** Integration via a Metamodel Neural Network that generates a prioritized diagnostic hypothesis. If critical uncertainty is detected, it triggers an interactive questioning module that feeds back into the system before confirming the final result.
+* **Treatment Functional Sequence:**
+  * **Tier 01:** Generation of eligible clinical alternatives and protocols.
+  * **Operational Filter:** Incorporation of the individual biological profile, active in-flight complications, and real-time onboard medication inventory.
+  * **Tier 02:** Prioritization via the PTRS (*Personalized Treatment Recommendation System*) Neural Network to issue a real-time, guided interactive action plan.
 
-* **Secuencia Funcional de Diagnóstico:**
-  * **Nivel 01:** Evaluación analítica paralela mediante motor de reglas médicas condicionales, modelos estadísticos, probabilísticos y análisis temporal respecto a la línea base (*baseline*) del astronauta.
-  * **Nivel 02:** Integración mediante una Red Neuronal Metamodelo que genera una hipótesis diagnóstica priorizada. Si detecta incertidumbre crítica, activa un módulo de interrogatorio interactivo que retroalimenta el sistema antes de confirmar el resultado final.
+### 3. Network Topology and Hardware Interconnection
 
-* **Secuencia Funcional de Tratamiento:**
-  * **Nivel 01:** Generación de alternativas y protocolos clínicos elegibles.
-  * **Filtro Operativo:** Incorporación del perfil biológico individual, complicaciones activas de vuelo e inventario real de medicamentos a bordo.
-  * **Nivel 02:** Priorización por Red Neuronal PTRS (*Personalized Treatment Recommendation System*) para emitir un plan de acción interactivo guiado en tiempo real.
+* **IVA Environment (Intravehicular):**
+  Wearable sensors $\rightarrow$ Wireless Body Network (WBN) $\rightarrow$ Body Controller $\rightarrow$ Local Area Network (LAN) $\rightarrow$ Station Computer $\rightarrow$ Telemetry link to Earth.
+* **EVA Environment (Extravehicular):**
+  Suit sensors $\rightarrow$ Suit Network $\rightarrow$ Suit Controller (housed in the suit backpack, with up to 1 month of autonomous local storage) $\rightarrow$ Delay/disruption-tolerant local network $\rightarrow$ Station Computer $\rightarrow$ Earth.
+* **Analysis Center:**
+  Complex medical equipment $\rightarrow$ Analysis Center Network $\rightarrow$ Analysis Center Controller $\rightarrow$ Station Computer $\rightarrow$ Earth.
 
-### 3. Topología de Redes e Interconexión de Hardware
+### 4. Multi-Modular User Interface (HMI)
 
-* **Entorno IVA (Intravehicular):**  
-  Sensores vestibles $\rightarrow$ Red Inalámbrica Corporal (WBN) $\rightarrow$ Body Controller $\rightarrow$ Red Local (LAN) $\rightarrow$ Computadora de la Estación $\rightarrow$ Enlace telemétrico a la Tierra.
-* **Entorno EVA (Extravehicular):**  
-  Sensores del traje $\rightarrow$ Suit Network $\rightarrow$ Suit Controller (alojado en la mochila del traje, con almacenamiento local autónomo de hasta 1 mes) $\rightarrow$ Red local tolerante a intermitencias $\rightarrow$ Computadora de la Estación $\rightarrow$ Tierra.
-* **Centro de Análisis:**  
-  Equipamiento médico complejo $\rightarrow$ Analysis Center Network $\rightarrow$ Analysis Center Controller $\rightarrow$ Computadora de la Estación $\rightarrow$ Tierra.
+Designed under the principle of cognitive simplification to prevent crew information overload:
 
-### 4. Interfaz de Usuario Multimodular (HMI)
+* **Automatic Flight-Phase Switcher:** Dynamically detects the mission phase (Microgravity entry, In-flight adaptation, and Return) to adjust biomedical thresholds and eliminate diagnostic and treatment false positives.
+* **Three Access Modes:**
+  1. **Astronaut Mode:** Intuitive self-management via color-coded anatomical mapping (Green, Yellow, Red), daily countermeasures tracking, and live interactive questioning.
+  2. **Medical Mode:** Deep clinical monitoring, biomedical waveforms, sleep architecture, and temporal trend curves.
+  3. **Systems Mode:** Technical hardware diagnostics, battery status, sensor drift, and network infrastructure health.
+* **Presentation and Interaction Modalities:**
+  * **Suitless (IVA):** Holographic projection on contact lenses or station display monitor.
+  * **Suited (EVA):** Holographic projection on the helmet visor.
+  * **Operational Control:** 100% voice-command operated across all modalities (hands-free operation).
 
-Diseñada bajo el principio de simplificación cognitiva para evitar la saturación de información en tripulantes:
-
-* **Conmutador Automático de Momentos Temporales:** Detecta dinámicamente la fase del vuelo (Entrada en microgravedad, Adaptación en vuelo y Retorno) para ajustar los umbrales biomédicos y eliminar falsos positivos de diagnóstico y tratamiento.
-* **Tres Modos de Acceso:**
-  1. **Modo Astronauta:** Autogestión intuitiva mediante cartografía anatómica semaforizada (Verde, Amarillo, Rojo), seguimiento de contramedidas diarias e interrogatorio interactivo en vivo.
-  2. **Modo Médico:** Monitoreo clínico profundo, trazados biomédicos, arquitectura del sueño y curvas de tendencias temporales.
-  3. **Modo Sistemas:** Diagnóstico técnico del hardware, estado de baterías, deriva de sensores y salud de la infraestructura de red.
-* **Modalidad de Presentación e Interacción:**
-  * **Sin Traje (IVA):** Proyección holográfica en lentes de contacto o pantalla monitor en la estación.
-  * **Con Traje (EVA):** Proyección holográfica en el visor del casco.
-  * **Control Operativo:** 100% mediante comandos por voz en todas las modalidades (operación manos libres).
-
----
-
-## Estructura del Repositorio
+## Repository Structure
 
 ```text
 ASTRAHEALTH-SYSTEM/
-├── .lovable/                 # Configuración del entorno de desarrollo Lovable
-├── docs/                     # Documentación técnica, investigación clínica y reportes científicos del sistema
-├── public/                   # Recursos estáticos, modelos 3D e iconografía
-├── src/                      # Código fuente principal (HMI aeroespacial y lógica de la aplicación)
-├── .gitignore                # Archivos e itinerarios excluidos de Git
-├── .prettierignore           # Exclusiones de formateo de código para Prettier
-├── .prettierrc               # Reglas de estilo y formateo de código (Prettier)
-├── AGENTS.md                 # Instrucciones y directrices para agentes de Inteligencia Artificial
-├── README.md                 # Documentación principal del repositorio
-├── bun.lock                  # Lockfile de dependencias del runtime Bun
-├── bunfig.toml               # Configuración del motor de ejecución Bun
-├── components.json           # Configuración de componentes de interfaz (Shadcn/UI)
-├── eslint.config.js          # Configuración del linter estático (ESLint)
-├── package-lock.json         # Lockfile de dependencias de npm
-└── package.json              # Metadatos, dependencias del proyecto y scripts de desarrollo
+├── .lovable/                 # Lovable development environment configuration
+├── docs/                     # Technical documentation, clinical research, and scientific reports
+├── public/                   # Static assets, 3D models, and iconography
+├── src/                      # Main source code (aerospace HMI and application logic)
+├── .gitignore                # Files and paths excluded from Git
+├── .prettierignore           # Code formatting exclusions for Prettier
+├── .prettierrc               # Code style and formatting rules (Prettier)
+├── AGENTS.md                 # Instructions and guidelines for Artificial Intelligence agents
+├── README.md                 # Main repository documentation
+├── bun.lock                  # Bun runtime dependency lockfile
+├── bunfig.toml               # Bun runtime configuration
+├── components.json           # UI component configuration (Shadcn/UI)
+├── eslint.config.js          # Static linter configuration (ESLint)
+├── package-lock.json         # npm dependency lockfile
+└── package.json              # Project metadata, dependencies, and development scripts
 ```
 
----
-
-## Tecnologías y Stack
+## Technologies and Stack
 
 * **Runtime & Package Manager:** Bun
 * **Frontend Framework:** React 18 + TypeScript + Vite
 * **UI & Styling:** Tailwind CSS + Shadcn/UI + Lucide Icons
-* **Simulación Web:** [https://www.astrahealth.earth/](https://www.astrahealth.earth/)
+* **Web Simulation:** <https://www.astrahealth.earth/>
 
----
+## Local Installation and Execution
 
-## Instalación y Ejecución Local
-
-1. **Clonar el repositorio:**
+1. **Clone the repository:**
    ```bash
-   git clone <URL_DEL_REPOSITORIO>
+   git clone <REPOSITORY_URL>
    cd ASTRAHEALTH-SYSTEM
    ```
 
-2. **Instalar dependencias:**
+2. **Install dependencies:**
    ```bash
    bun install
-   # o utilizando npm:
+   # or using npm:
    # npm install
    ```
 
-3. **Iniciar el servidor de desarrollo:**
+3. **Start the development server:**
    ```bash
    bun dev
-   # o utilizando npm:
+   # or using npm:
    # npm run dev
    ```
 
-4. **Abrir en el navegador:**  
-   Navega a `http://localhost:8080` para interactuar con la plataforma HMI localmente.
+4. **Open in the browser:**
+   Navigate to `http://localhost:8080` to interact with the HMI platform locally.
 
----
-
-**Simulación Web Interactiva:** Prueba el sistema en vivo en [https://www.astrahealth.earth/](https://www.astrahealth.earth/)
+**Interactive Web Simulation:** Test the live system at <https://www.astrahealth.earth/>
