@@ -32,7 +32,7 @@ export function Countermeasures({ sim, compact }: { sim: MissionSim; compact?: b
   const items = [
     {
       key: "ex",
-      label: "Ejercicio ARED / T2",
+      label: "ARED / T2 Exercise",
       value: `${c.exerciseMin}/120 min`,
       pct: c.exerciseMin / 120,
       icon: Dumbbell,
@@ -42,15 +42,15 @@ export function Countermeasures({ sim, compact }: { sim: MissionSim; compact?: b
     {
       key: "vb",
       label: "Vitamina B",
-      value: c.vitaminB ? "Tomada" : "Pendiente",
+      value: c.vitaminB ? "Taken" : "Pending",
       pct: c.vitaminB,
       icon: Pill,
-      action: c.vitaminB ? "Hecho" : "Registrar",
+      action: c.vitaminB ? "Done" : "Log",
       onClick: () => set((s) => ({ ...s, vitaminB: 1 })),
     },
     {
       key: "hy",
-      label: "Hidratación",
+      label: "Hydration",
       value: `${(c.hydrationMl / 1000).toFixed(2)}/2.5 L`,
       pct: c.hydrationMl / 2500,
       icon: Droplets,
@@ -59,7 +59,7 @@ export function Countermeasures({ sim, compact }: { sim: MissionSim; compact?: b
     },
     {
       key: "sl",
-      label: "Eficiencia de sueño",
+      label: "Sleep Efficiency",
       value: `${c.sleepEff}%`,
       pct: c.sleepEff / 90,
       icon: Moon,
@@ -70,11 +70,11 @@ export function Countermeasures({ sim, compact }: { sim: MissionSim; compact?: b
   const completed = items.filter((i) => i.pct >= 1).length;
   return (
     <Panel
-      title="Contramedidas espaciales · hoy"
+      title="Spaceflight Countermeasures · Today"
       icon={<Trophy className="size-3.5 text-hmi" />}
       aside={
         <span className="telemetry text-xs text-hmi">
-          {completed}/4 metas · racha 12 días
+          {completed}/4 targets · 12-day streak
         </span>
       }
     >
@@ -94,7 +94,7 @@ export function Countermeasures({ sim, compact }: { sim: MissionSim; compact?: b
                   disabled={done}
                   className="min-h-9 rounded-md border border-hmi/40 px-3 text-xs font-medium text-hmi transition-colors hover:bg-hmi/10 disabled:border-nominal/40 disabled:text-nominal"
                 >
-                  {done ? "✓ Meta" : i.action}
+                  {done ? "✓ Target met" : i.action}
                 </button>
               )}
             </div>

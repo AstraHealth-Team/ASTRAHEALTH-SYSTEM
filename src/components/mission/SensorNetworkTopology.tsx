@@ -8,9 +8,9 @@ import {
 import { cn } from "@/lib/utils";
 
 const CONNECTIVITY_LABEL = {
-  connected: "Conectado",
-  standby: "En espera",
-  disconnected: "Desconectado",
+  connected: "Connected",
+  standby: "Standby",
+  disconnected: "Disconnected",
 } as const;
 
 export function SensorNetworkTopology({
@@ -33,27 +33,27 @@ export function SensorNetworkTopology({
   return (
     <section
       className="panel grid min-w-0 gap-4 p-4 sm:p-5"
-      aria-label="Topología de red biomédica"
+      aria-label="Biomedical network topology"
     >
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="label-caps flex items-center gap-2 text-foreground">
             <Network className="size-4 text-sensors" aria-hidden />
-            Topología de sensores y controladores
+            Sensor and Controller Topology
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Selecciona la ruta activa; los estados se sincronizan con el perfil Astronauta.
+            Select an active route; status is synchronized with the Astronaut profile.
           </p>
         </div>
       </header>
 
-      <section className="grid gap-2" aria-label="Estado general de sensores">
-        <h3 className="label-caps text-muted-foreground">Estado general de sensores</h3>
+      <section className="grid gap-2" aria-label="Overall sensor status">
+        <h3 className="label-caps text-muted-foreground">Overall Sensor Status</h3>
         <div className="grid gap-2 sm:grid-cols-3">
           <article className="rounded-lg border border-border bg-background/35 p-3">
             <p className="flex items-center gap-2 text-xs text-muted-foreground">
               <Activity className="size-3.5 text-sensors" aria-hidden />
-              Estado operativo
+              Operational Status
             </p>
             <p
               className={cn(
@@ -62,21 +62,21 @@ export function SensorNetworkTopology({
               )}
             >
               {operationalCount === sensors.length
-                ? "Todos operativos"
-                : `${operationalCount}/${sensors.length} operativos`}
+                ? "All Operational"
+                : `${operationalCount}/${sensors.length} Operational`}
             </p>
           </article>
           <article className="rounded-lg border border-border bg-background/35 p-3">
             <p className="flex items-center gap-2 text-xs text-muted-foreground">
               <BatteryFull className="size-3.5 text-sensors" aria-hidden />
-              Batería promedio
+              Average Battery
             </p>
             <p className="telemetry mt-1 text-sm font-bold">{averageBattery}%</p>
           </article>
           <article className="rounded-lg border border-border bg-background/35 p-3">
             <p className="flex items-center gap-2 text-xs text-muted-foreground">
               <Signal className="size-3.5 text-sensors" aria-hidden />
-              Conectividad local
+              Local Network Connectivity
             </p>
             <p
               className={cn(
@@ -84,7 +84,7 @@ export function SensorNetworkTopology({
                 connectedCount === sensors.length ? "text-nominal" : "text-warning",
               )}
             >
-              {connectedCount}/{sensors.length} conectados
+              {connectedCount}/{sensors.length} Connected
             </p>
           </article>
         </div>
@@ -93,7 +93,7 @@ export function SensorNetworkTopology({
       <div
         className="grid gap-2 md:grid-cols-3"
         role="group"
-        aria-label="Escenarios de red biomédica"
+        aria-label="Biomedical Network Scenarios"
       >
         {SENSOR_NETWORK_SCENARIOS.map((scenario) => {
           const selected = selectedScenario === scenario.id;
@@ -119,9 +119,9 @@ export function SensorNetworkTopology({
               <span className="flex flex-wrap items-center gap-x-1 gap-y-1 text-[0.65rem] leading-relaxed text-muted-foreground">
                 <span>Sensor</span>
                 <span aria-hidden="true">→</span>
-                <span>{scenario.network} (Controlador)</span>
+                <span>{scenario.network} (Controller)</span>
                 <span aria-hidden="true">→</span>
-                <span>Red Local</span>
+                <span>Local Network</span>
               </span>
             </button>
           );
@@ -138,22 +138,22 @@ export function SensorNetworkTopology({
                 ? "border-sensors/60 bg-sensors/8 shadow-[0_0_20px_-14px_var(--sensors)]"
                 : "border-border bg-background/25",
             )}
-            aria-label={`Controlador ${controller.number}, Escenario ${controller.number}, ${controller.network}`}
+            aria-label={`Controller ${controller.number}, Scenario ${controller.number}, ${controller.network}`}
             aria-current={controller.selected ? "true" : undefined}
           >
             <header>
               <h3 className="text-sm font-bold">
-                Controlador {controller.number} / Escenario {controller.number}
+                Controller {controller.number} / Scenario {controller.number}
               </h3>
               <p className="mt-1 text-xs text-muted-foreground">{controller.network}</p>
             </header>
             <dl className="grid gap-2">
               <div className="flex items-center justify-between gap-2 rounded-md bg-background/40 px-3 py-2">
-                <dt className="text-xs text-muted-foreground">Batería</dt>
+                <dt className="text-xs text-muted-foreground">Battery</dt>
                 <dd className="telemetry text-sm font-bold">{controller.batteryPercent}%</dd>
               </div>
               <div className="flex items-center justify-between gap-2 rounded-md bg-background/40 px-3 py-2">
-                <dt className="text-xs text-muted-foreground">Estado</dt>
+                <dt className="text-xs text-muted-foreground">Status</dt>
                 <dd
                   className={cn(
                     "text-xs font-bold uppercase",
@@ -164,7 +164,7 @@ export function SensorNetworkTopology({
                 </dd>
               </div>
               <div className="flex items-center justify-between gap-2 rounded-md bg-background/40 px-3 py-2">
-                <dt className="text-xs text-muted-foreground">Conectividad con la Red Local</dt>
+                <dt className="text-xs text-muted-foreground">Local Network Connectivity</dt>
                 <dd
                   className={cn(
                     "text-right text-xs font-bold",

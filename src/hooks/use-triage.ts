@@ -44,17 +44,17 @@ export function useTriage(scenario: ScenarioId, baseVitals: Vitals) {
 
   // Telemetry seeds the triage whenever the mission scenario changes
   useEffect(() => {
-    apply(vitalsTriage(baseVitals), "telemetria");
+    apply(vitalsTriage(baseVitals), "telemetry");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scenario]);
 
   const simulate = useCallback((s: TriageSystem) => {
-    apply({ [s]: SIM_ALERTS[s] }, "simulacion");
+    apply({ [s]: SIM_ALERTS[s] }, "simulation");
     setHighlight(s);
   }, [apply]);
 
   const resetAll = useCallback(() => {
-    apply(ALL_GREEN, "reinicio");
+    apply(ALL_GREEN, "reset");
     setHighlight(null);
   }, [apply]);
 

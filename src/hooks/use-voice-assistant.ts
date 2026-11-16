@@ -46,14 +46,13 @@ function getRecognitionCtor(): RecognitionCtor | null {
 }
 
 function speechLang(): string {
-  const l = typeof navigator !== "undefined" ? navigator.language : "";
-  return l?.toLowerCase().startsWith("es") ? l : "es-ES";
+  return "en-US";
 }
 
 function pickVoice(lang: string): SpeechSynthesisVoice | null {
-  const voices = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith("es"));
+  const voices = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith("en"));
   if (voices.length === 0) return null;
-  const order = [lang.toLowerCase(), "es-pe", "es-419", "es-us", "es-mx", "es-es"];
+  const order = [lang.toLowerCase(), "en-us", "en-gb", "en-au", "en-ca"];
   const score = (v: SpeechSynthesisVoice) => {
     const i = order.indexOf(v.lang.toLowerCase().replace("_", "-"));
     return (i < 0 ? 10 : i) - (/google|natural|neural/i.test(v.name) ? 0.5 : 0);
@@ -255,7 +254,7 @@ export function useVoiceAssistant({ triage, vitals }: { triage: Triage; vitals: 
       if (final.trim()) {
         gotFinal = true;
         restartsRef.current = 0;
-        void handleAnswer(final.trim(), "voz");
+        void handleAnswer(final.trim(), "voice");
       }
     };
     rec.onerror = (e) => {
@@ -289,7 +288,7 @@ export function useVoiceAssistant({ triage, vitals }: { triage: Triage; vitals: 
     setState("idle");
   }
 
-  async function handleAnswer(text: string, source: "voz" | "texto") {
+  async function handleAnswer(text: string, source: "voice" | "text") {
     const token = ++tokenRef.current;
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     stopRecognition();
@@ -307,7 +306,8 @@ export function useVoiceAssistant({ triage, vitals }: { triage: Triage; vitals: 
 
     const [external] = await Promise.all([
       queryExternalLLM(text, {
-        system: "Asistente médico de triaje a bordo. Responde en español, breve y clínico.",
+        system:
+          "You are ASTRA, an onboard aerospace medical triage assistant. Respond in concise, professional clinical English. Provide decision support, not a definitive diagnosis, and direct urgent symptoms to the Flight Surgeon.",
         history: triageRef.current.transcript.map((t) => ({ role: t.role, text: t.text })),
       }).catch(() => null),
       wait(750),
@@ -320,7 +320,7 @@ export function useVoiceAssistant({ triage, vitals }: { triage: Triage; vitals: 
         external ??
         (Object.keys(ev.updates).length > 0
           ? `${acknowledge(null, ev.updates, merged)} ${diagnosisSummary(merged)}`
-          : "No identifiqué síntomas en tu mensaje. Pulsa Iniciar consulta para una evaluación guiada.");
+          : "I could not identify symptoms in your message. Select Start consultation for a guided assessment.");
       await speak(reply);
       if (token === tokenRef.current) setState("idle");
       return;
@@ -329,7 +329,7 @@ export function useVoiceAssistant({ triage, vitals }: { triage: Triage; vitals: 
     const understood = Boolean(ev.updates[q.system]);
     if (!understood && unclearRef.current < 1) {
       unclearRef.current++;
-      await speak(external ?? `No te entendí bien. ${q.text}`);
+      await speak(external ?? `I did not understand. ${q.text}`);
       listen(token);
       return;
     }
@@ -367,9 +367,9 @@ export function useVoiceAssistant({ triage, vitals }: { triage: Triage; vitals: 
     const floor = vitalsTriage(vitalsRef.current);
     const flagged = TRIAGE_SYSTEMS.filter((s) => floor[s].level !== "green");
     const tele = flagged.length
-      ? ` La telemetría ya marca alerta en el sistema ${flagged.map((s) => TRIAGE_META[s].title.toLowerCase()).join(" y ")}.`
+      ? ` Telemetry is already flagging the ${flagged.map((s) => TRIAGE_META[s].title.toLowerCase()).join(" and ")} system.`
       : "";
-    await speak(`Hola, soy ASTRA, tu asistente médico a bordo. Necesito hacerte preguntas para tu diagnóstico.${tele} ${TRIAGE_QUESTIONS[0]?.text ?? ""}`);
+    await speak(`Hello, I am ASTRA, your onboard medical assistant. I will ask you a few questions to assess your symptoms.${tele} ${TRIAGE_QUESTIONS[0]?.text ?? ""}`);
     listen(token);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -388,7 +388,7 @@ export function useVoiceAssistant({ triage, vitals }: { triage: Triage; vitals: 
 
   const submitText = (text: string) => {
     const t = text.trim();
-    if (t) void handleAnswer(t, "texto");
+    if (t) void handleAnswer(t, "text");
   };
 
   const setVoiceOut = (on: boolean) => {

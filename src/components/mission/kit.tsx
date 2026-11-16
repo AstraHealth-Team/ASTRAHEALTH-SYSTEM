@@ -6,10 +6,10 @@ import type { HealthLevel } from "@/lib/mission";
 export type BlockKey = "sensors" | "dtn" | "edge" | "hmi";
 
 export const BLOCKS: Record<BlockKey, { n: number; title: string; cls: string }> = {
-  sensors: { n: 1, title: "Sensores (IEEE 11073)", cls: "block-sensors" },
-  dtn: { n: 2, title: "Red Espacial (DTN)", cls: "block-dtn" },
+  sensors: { n: 1, title: "Sensors (IEEE 11073)", cls: "block-sensors" },
+  dtn: { n: 2, title: "Space Network (DTN)", cls: "block-dtn" },
   edge: { n: 3, title: "Edge AI + FHIR R4", cls: "block-edge" },
-  hmi: { n: 4, title: "Interfaz HMI (NASA-STD-3001)", cls: "block-hmi" },
+  hmi: { n: 4, title: "HMI (NASA-STD-3001)", cls: "block-hmi" },
 };
 
 export function BlockFrame({

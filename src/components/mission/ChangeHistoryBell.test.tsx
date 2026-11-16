@@ -9,8 +9,8 @@ const history: HistoryEntry[] = [
     at: "2026-11-15T18:00:00.000Z",
     system: "cardio",
     level: "yellow",
-    finding: "Palpitaciones / ritmo irregular",
-    source: "simulacion",
+    finding: "Palpitations / irregular rhythm",
+    source: "simulation",
   },
 ];
 
@@ -19,13 +19,13 @@ describe("ChangeHistoryBell", () => {
     const onReset = vi.fn();
     render(<ChangeHistoryBell history={history} onReset={onReset} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Historial de cambios: 1 evento" }));
+    fireEvent.click(screen.getByRole("button", { name: "Change History: 1 event" }));
 
-    expect(screen.getByRole("heading", { name: "Historial de Cambios" })).toBeInTheDocument();
-    expect(screen.getByText(/Palpitaciones \/ ritmo irregular/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Restablecer Todo a Verde" }));
+    expect(screen.getByRole("heading", { name: "Change History" })).toBeInTheDocument();
+    expect(screen.getByText(/Palpitations \/ irregular rhythm/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Reset All to Nominal" }));
 
     expect(onReset).toHaveBeenCalledOnce();
-    expect(screen.queryByRole("heading", { name: "Historial de Cambios" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Change History" })).not.toBeInTheDocument();
   });
 });

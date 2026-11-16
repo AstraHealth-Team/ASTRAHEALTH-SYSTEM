@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AudioLines, Mic, MicOff, Send, Volume2, VolumeX } from "lucide-react";
 import type { Triage } from "@/hooks/use-triage";
 import type { VoiceAssistant } from "@/hooks/use-voice-assistant";
+import { TRIAGE_META } from "@/lib/triage";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -12,10 +13,10 @@ import {
 } from "@/components/ui/dialog";
 
 const STATE_LABEL = {
-  idle: "En espera",
-  listening: "Escuchando",
-  processing: "Analizando",
-  speaking: "ASTRA está hablando",
+  idle: "Standby",
+  listening: "Listening",
+  processing: "Processing",
+  speaking: "ASTRA is speaking",
 } as const;
 
 export function VoiceDiagnosticModal({
@@ -65,13 +66,13 @@ export function VoiceDiagnosticModal({
       <DialogContent className="max-h-[92vh] max-w-2xl overflow-y-auto border-voice-glow/30 bg-[var(--gradient-voice-panel)] p-0 text-foreground sm:rounded-2xl">
         <div className="grid gap-5 p-5 sm:p-7">
           <DialogHeader className="pr-8 text-left">
-            <p className="label-caps text-voice-glow">ASTRA · Asistente clínico a bordo</p>
+            <p className="label-caps text-voice-glow">ASTRA · Onboard Clinical Assistant</p>
             <DialogTitle className="text-xl leading-snug sm:text-2xl">
-              NECESITO HACERTE PREGUNTAS PARA TU DIAGNÓSTICO
+              I NEED TO ASK YOU A FEW QUESTIONS
             </DialogTitle>
             <DialogDescription>
-              Responde hablando o escribiendo. Este triaje es una ayuda a bordo y no sustituye la
-              evaluación del Oficial Médico.
+              Respond by speaking or typing. This triage is an onboard decision-support tool and
+              does not replace evaluation by the Flight Surgeon.
             </DialogDescription>
           </DialogHeader>
 
@@ -88,7 +89,7 @@ export function VoiceDiagnosticModal({
                   )}
                   style={{ opacity: "var(--orb-level, 1)" }}
                   role="img"
-                  aria-label={`Orbe de ASTRA: ${STATE_LABEL[assistant.state]}`}
+                  aria-label={`ASTRA orb: ${STATE_LABEL[assistant.state]}`}
                 >
                   <span className="orb-blob left-4 top-5 size-10 opacity-70" />
                   <span className="orb-blob bottom-4 right-3 size-8 opacity-60 [animation-delay:-3s]" />
@@ -101,14 +102,14 @@ export function VoiceDiagnosticModal({
                 </p>
                 <p className="telemetry mt-1 text-[0.68rem] text-muted-foreground">
                   {assistant.micStatus === "on"
-                    ? "Micrófono conectado"
+                    ? "Microphone connected"
                     : assistant.micStatus === "denied"
-                      ? "Micrófono denegado · puedes responder por texto"
+                      ? "Microphone access denied · you can respond by text"
                       : assistant.micStatus === "unsupported"
-                        ? "Micrófono no disponible · puedes responder por texto"
+                        ? "Microphone unavailable · you can respond by text"
                         : assistant.sttSupported
-                          ? "Micrófono listo"
-                          : "Reconocimiento de voz no disponible"}
+                          ? "Microphone ready"
+                          : "Speech recognition unavailable"}
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-2">
@@ -119,10 +120,10 @@ export function VoiceDiagnosticModal({
                 >
                   {assistant.active ? <MicOff className="size-4" /> : <Mic className="size-4" />}
                   {assistant.active
-                    ? "Finalizar consulta"
+                    ? "End consultation"
                     : assistant.finished
-                      ? "Nueva consulta"
-                      : "Iniciar consulta"}
+                      ? "New consultation"
+                      : "Start consultation"}
                 </button>
                 <button
                   type="button"
@@ -135,7 +136,7 @@ export function VoiceDiagnosticModal({
                   ) : (
                     <VolumeX className="size-4" />
                   )}
-                  Voz {assistant.voiceOut ? "activada" : "silenciada"}
+                  Voice {assistant.voiceOut ? "on" : "muted"}
                 </button>
               </div>
             </div>
@@ -144,7 +145,7 @@ export function VoiceDiagnosticModal({
               {assistant.question ? (
                 <div className="rounded-xl border border-voice-glow/30 bg-background/25 p-4">
                   <p className="label-caps mb-2 text-voice-glow">
-                    Pregunta {assistant.step + 1} · {assistant.question.system}
+                    Question {assistant.step + 1} · {TRIAGE_META[assistant.question.system].title}
                   </p>
                   <p className="text-sm leading-relaxed">{assistant.question.text}</p>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -162,11 +163,11 @@ export function VoiceDiagnosticModal({
                 </div>
               ) : (
                 <div className="rounded-xl border border-border bg-background/25 p-4">
-                  <p className="label-caps mb-2 text-muted-foreground">Consulta</p>
+                  <p className="label-caps mb-2 text-muted-foreground">Consultation</p>
                   <p className="text-sm leading-relaxed">
                     {assistant.finished
-                      ? "La evaluación guiada ha terminado. Puedes iniciar una nueva consulta."
-                      : "Escribe un síntoma o inicia la consulta guiada."}
+                      ? "The guided assessment is complete. You may start a new consultation."
+                      : "Enter a symptom or start the guided consultation."}
                   </p>
                 </div>
               )}
@@ -180,7 +181,7 @@ export function VoiceDiagnosticModal({
               )}
               {assistant.lastAi && (
                 <div className="rounded-lg border border-border bg-background/35 px-3 py-2.5">
-                  <p className="label-caps mb-1 text-muted-foreground">Última respuesta de ASTRA</p>
+                  <p className="label-caps mb-1 text-muted-foreground">Latest ASTRA Response</p>
                   <p className="text-sm leading-relaxed">{assistant.lastAi}</p>
                 </div>
               )}
@@ -189,20 +190,20 @@ export function VoiceDiagnosticModal({
 
           <form onSubmit={submit} className="flex gap-2">
             <label htmlFor="voice-diagnostic-text" className="sr-only">
-              Responder por texto
+              Respond by text
             </label>
             <input
               id="voice-diagnostic-text"
               value={text}
               onChange={(event) => setText(event.target.value)}
-              placeholder="Escribe cómo te sientes…"
+              placeholder="Describe how you are feeling…"
               className="min-h-12 min-w-0 flex-1 rounded-lg border border-input bg-background/50 px-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-voice-glow"
             />
             <button
               type="submit"
               disabled={!text.trim()}
               className="grid min-h-12 min-w-12 place-items-center rounded-lg bg-voice px-3 text-voice-foreground transition-opacity hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
-              aria-label="Enviar respuesta"
+              aria-label="Submit response"
             >
               <Send className="size-4" />
             </button>
@@ -211,7 +212,7 @@ export function VoiceDiagnosticModal({
           {triage.transcript.length > 0 && (
             <details className="rounded-lg border border-border bg-background/20 px-3 py-2">
               <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
-                Transcripción de la consulta · {triage.transcript.length} mensajes
+                Consultation transcript · {triage.transcript.length} messages
               </summary>
               <ol className="mt-2 grid max-h-32 gap-2 overflow-y-auto text-xs">
                 {triage.transcript.slice(-6).map((entry, index) => (
@@ -219,7 +220,7 @@ export function VoiceDiagnosticModal({
                     key={`${entry.at}-${index}`}
                     className={entry.role === "ia" ? "text-voice-glow" : "text-foreground"}
                   >
-                    <span className="font-semibold">{entry.role === "ia" ? "ASTRA" : "Tú"}:</span>{" "}
+                    <span className="font-semibold">{entry.role === "ia" ? "ASTRA" : "You"}:</span>{" "}
                     {entry.text}
                   </li>
                 ))}

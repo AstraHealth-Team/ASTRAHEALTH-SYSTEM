@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 import type { MissionSim } from "@/hooks/use-mission-sim";
 
 const PHASES = [
-  { id: "microgravity-entry", label: "ENTRADA EN MICROGRAVEDAD" },
-  { id: "in-flight-adaptation", label: "ADAPTACIÓN DURANTE EL VUELO" },
-  { id: "return", label: "RETORNO" },
+  { id: "microgravity-entry", label: "MICROGRAVITY ENTRY" },
+  { id: "in-flight-adaptation", label: "IN-FLIGHT ADAPTATION" },
+  { id: "return", label: "RETURN" },
 ] as const;
 
 const MISSION_DAY = 142;
@@ -15,17 +15,17 @@ export function MissionOverview({ sim }: { sim: MissionSim }) {
   return (
     <section
       className="block-hmi block-frame grid gap-3 p-3 sm:p-4"
-      aria-label="Estado longitudinal de la misión"
+      aria-label="Longitudinal mission status"
     >
       <div>
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <h2 className="label-caps text-muted-foreground">
-            MOMENTOS DE CAMBIO FISIOLÓGICOS
+            PHYSIOLOGICAL TRANSITION MOMENTS
           </h2>
           {sim.criticalPhase && (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emergency/50 bg-emergency/10 px-2.5 py-1 text-[0.65rem] font-semibold text-emergency">
               <AlertTriangle className="size-3.5" />
-              FASE CRÍTICA ACTIVA
+              CRITICAL PHASE ACTIVE
             </span>
           )}
         </div>
@@ -54,15 +54,15 @@ export function MissionOverview({ sim }: { sim: MissionSim }) {
 
       <div className="border-t border-hairline pt-3">
         <div className="mb-2 flex items-center justify-between gap-2">
-          <h2 className="label-caps text-muted-foreground">VISTA LONGITUDINAL DE LA MISIÓN</h2>
+          <h2 className="label-caps text-muted-foreground">LONGITUDINAL MISSION VIEW</h2>
           <span className="telemetry shrink-0 text-xs font-semibold text-hmi">
-            Día {MISSION_DAY} / {MISSION_DURATION}
+            Day {MISSION_DAY} / {MISSION_DURATION}
           </span>
         </div>
         <div
           className="h-2 overflow-hidden rounded-full bg-muted"
           role="progressbar"
-          aria-label="Progreso de la misión"
+          aria-label="Mission progress"
           aria-valuemin={0}
           aria-valuemax={MISSION_DURATION}
           aria-valuenow={MISSION_DAY}
@@ -73,10 +73,10 @@ export function MissionOverview({ sim }: { sim: MissionSim }) {
           />
         </div>
         <div className="mt-2 grid grid-cols-4 items-start text-[0.64rem] text-muted-foreground sm:text-xs">
-          <span className="text-left">Lanzamiento</span>
+          <span className="text-left">Launch</span>
           <span className="text-center">EVA #3 · D128</span>
-          <span className="text-center">Hoy · D{MISSION_DAY}</span>
-          <span className="text-right">Retorno</span>
+          <span className="text-center">Today · D{MISSION_DAY}</span>
+          <span className="text-right">Return</span>
         </div>
       </div>
     </section>

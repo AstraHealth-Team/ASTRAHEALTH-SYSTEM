@@ -83,9 +83,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "ASTRA Health HMI" },
-      { name: "description", content: "Monitoreo de salud para astronautas · NASA Space Apps 2026" },
+      { name: "description", content: "Aerospace health monitoring for astronauts · NASA Space Apps 2026" },
       { property: "og:title", content: "ASTRA Health HMI | NASA Space Apps 2026" },
-      { property: "og:description", content: "Monitoreo de salud para astronautas · NASA Space Apps 2026" },
+      { property: "og:description", content: "Aerospace health monitoring for astronauts · NASA Space Apps 2026" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -112,7 +112,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="es" className="dark">
+    <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>

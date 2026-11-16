@@ -13,10 +13,10 @@ describe("VitalKpis", () => {
     const cards = screen.getAllByRole("article");
     expect(cards).toHaveLength(5);
     expect(within(cards[0]).getByText("68")).toBeInTheDocument();
-    expect(within(cards[0]).getByText("lat/min")).toBeInTheDocument();
-    expect(screen.getByLabelText("Presión arterial: 116/74 mmHg")).toBeInTheDocument();
-    expect(screen.getByLabelText("Frecuencia respiratoria: 14 resp/min")).toBeInTheDocument();
-    expect(screen.getByLabelText("Temperatura corporal: 36.8 °C")).toBeInTheDocument();
-    expect(screen.getByLabelText("Saturación de oxígeno / SpO2: 98 %")).toBeInTheDocument();
+    expect(within(cards[0]).getByText("bpm")).toBeInTheDocument();
+    expect(screen.getByLabelText("Blood Pressure: 116/74 mmHg")).toBeInTheDocument();
+    expect(screen.getByLabelText("Respiratory Rate: 14 breaths/min")).toBeInTheDocument();
+    expect(screen.getByLabelText("Body Temperature: 36.8 °C")).toBeInTheDocument();
+    expect(screen.getByLabelText("Oxygen Saturation / SpO2: 98 %")).toBeInTheDocument();
   });
 });

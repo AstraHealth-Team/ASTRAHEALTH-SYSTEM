@@ -40,35 +40,35 @@ export function VitalKpis({
 
   const metrics = [
     {
-      label: "Frecuencia cardíaca",
+      label: "Heart Rate",
       value: `${vitals.hr}`,
-      unit: "lat/min",
+      unit: "bpm",
       icon: HeartPulse,
       level: cardioLevel,
     },
     {
-      label: "Presión arterial",
+      label: "Blood Pressure",
       value: `${vitals.sys}/${vitals.dia}`,
       unit: "mmHg",
       icon: HeartPulse,
       level: cardioLevel,
     },
     {
-      label: "Frecuencia respiratoria",
+      label: "Respiratory Rate",
       value: `${vitals.rr}`,
-      unit: "resp/min",
+      unit: "breaths/min",
       icon: Wind,
       level: respLevel,
     },
     {
-      label: "Temperatura corporal",
+      label: "Body Temperature",
       value: vitals.temp.toFixed(1),
       unit: "°C",
       icon: Thermometer,
       level: overallTriageLevel,
     },
     {
-      label: "Saturación de oxígeno / SpO2",
+      label: "Oxygen Saturation / SpO2",
       value: `${vitals.spo2}`,
       unit: "%",
       icon: Droplets,
@@ -79,7 +79,7 @@ export function VitalKpis({
   return (
     <div
       className="grid h-fit min-w-0 self-start content-start items-start grid-cols-2 gap-2 sm:grid-cols-3"
-      aria-label="Signos vitales en tiempo real"
+      aria-label="Real-time vital signs"
     >
       {metrics.map((metric) => (
         <article
@@ -101,7 +101,7 @@ export function VitalKpis({
             </span>
           </p>
           <span className="sr-only">
-            Estado: <LevelIcon level={metric.level} /> {metric.level}
+            Status: <LevelIcon level={metric.level} /> {metric.level}
           </span>
         </article>
       ))}

@@ -23,11 +23,11 @@ import { WaveCanvas } from "./WaveCanvas";
 import { getControllerTelemetry } from "@/lib/sensor-network";
 
 const PLAIN: Record<string, string> = {
-  nominal: "Todo está en orden. Puedes seguir tu rutina.",
-  caution: "Hay un valor que estamos vigilando. No necesitas hacer nada aún.",
-  warning: "Tu cuerpo necesita atención. Sigue los pasos de abajo.",
-  emergency: "Peligro inmediato. Sigue la orden de abajo ahora.",
-  advisory: "Todo está en orden.",
+  nominal: "All systems are nominal. You may continue your routine.",
+  caution: "A value is being monitored. No action is required at this time.",
+  warning: "Your health requires attention. Follow the steps below.",
+  emergency: "Immediate danger. Follow the instruction below now.",
+  advisory: "All systems are nominal.",
 };
 
 function AvatarExplorer({ sim, triage }: { sim: MissionSim; triage: Triage }) {
@@ -36,7 +36,7 @@ function AvatarExplorer({ sim, triage }: { sim: MissionSim; triage: Triage }) {
     <div className="panel grid min-w-0 items-start gap-4 p-4 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <div className="min-h-[340px]">
         <p className="label-caps mb-1 text-muted-foreground">
-          Avatar anatómico · 3 sistemas de triaje
+          ANATOMICAL AVATAR · 3 TRIAGE SYSTEMS
         </p>
         <BodyAvatar systems={triage.systems} selected={system} onSelect={setSystem} />
       </div>
@@ -64,10 +64,10 @@ function Instructions({ sim, big }: { sim: MissionSim; big?: boolean }) {
       >
         <ListChecks className="size-3.5" />
         {sim.scenario === "spe"
-          ? "Orden de evacuación"
+          ? "Evacuation Order"
           : sim.scenario === "eva"
-            ? "Instrucciones inmediatas"
-            : "Guía de autocuidado"}
+            ? "Immediate Instructions"
+            : "Self-Care Guide"}
       </p>
       <ol className="grid gap-2">
         {s.instructions.map((step, i) => {
@@ -149,7 +149,7 @@ function AstronautView({ sim, triage }: { sim: MissionSim; triage: Triage }) {
               ))}
             </div>
             <div>
-              <p className="label-caps text-muted-foreground">Semáforo de salud</p>
+              <p className="label-caps text-muted-foreground">Health Status</p>
               <p
                 className={cn(
                   "flex items-center gap-2 text-3xl font-bold tracking-tight",
@@ -167,12 +167,12 @@ function AstronautView({ sim, triage }: { sim: MissionSim; triage: Triage }) {
       </div>
 
       <AvatarExplorer sim={sim} triage={triage} />
-      <section className="panel grid gap-3 p-4" aria-label="Envío de información">
-        <h2 className="label-caps text-muted-foreground">ENVÍO DE INFORMACIÓN</h2>
+      <section className="panel grid gap-3 p-4" aria-label="Information transmission">
+        <h2 className="label-caps text-muted-foreground">INFORMATION TRANSMISSION</h2>
         <div className="grid gap-2 sm:grid-cols-2">
           {[
-            { label: "Envío a Red Local", on: delivery.localNetwork },
-            { label: "Enlace Estación → Tierra", on: delivery.stationToEarth },
+            { label: "Local Network Uplink", on: delivery.localNetwork },
+            { label: "Station → Earth Link", on: delivery.stationToEarth },
           ].map((item) => (
             <div
               key={item.label}
@@ -199,36 +199,36 @@ function AstronautView({ sim, triage }: { sim: MissionSim; triage: Triage }) {
         </div>
       </section>
       <Countermeasures sim={sim} />
-      <TrendPanel scenario={sim.scenario} title="Tendencias Fisiológicas Dinámicas" />
+      <TrendPanel scenario={sim.scenario} title="Dynamic Physiological Trends" />
     </div>
   );
 }
 
 const DIFFERENTIAL: Record<ScenarioId, { dx: string; p: number }[]> = {
   nominal: [
-    { dx: "Ritmo sinusal normal", p: 0.98 },
-    { dx: "Arritmia sinusal respiratoria", p: 0.02 },
+    { dx: "Normal sinus rhythm", p: 0.98 },
+    { dx: "Respiratory sinus arrhythmia", p: 0.02 },
   ],
   eva: [
-    { dx: "Extrasistolia ventricular por estrés metabólico", p: 0.71 },
-    { dx: "Hipercapnia por CO2 del traje", p: 0.17 },
-    { dx: "Hipopotasemia (déficit electrolítico)", p: 0.08 },
-    { dx: "Isquemia miocárdica", p: 0.04 },
+    { dx: "Metabolic stress-induced ventricular ectopy", p: 0.71 },
+    { dx: "Hypercapnia due to suit CO2", p: 0.17 },
+    { dx: "Hypokalemia (electrolyte deficiency)", p: 0.08 },
+    { dx: "Myocardial ischemia", p: 0.04 },
   ],
   spe: [
-    { dx: "Exposición aguda a radiación (pre-ARS)", p: 0.62 },
-    { dx: "Respuesta de estrés agudo", p: 0.31 },
-    { dx: "Sin daño clínico detectable", p: 0.07 },
+    { dx: "Acute radiation exposure (pre-ARS)", p: 0.62 },
+    { dx: "Acute stress response", p: 0.31 },
+    { dx: "No detectable clinical injury", p: 0.07 },
   ],
 };
 
 const INVENTORY = [
   { item: "Amiodarona 150 mg IV", qty: 6, min: 4 },
-  { item: "Desfibrilador AED", qty: 1, min: 1 },
+  { item: "AED Defibrillator", qty: 1, min: 1 },
   { item: "Epinefrina 1 mg", qty: 10, min: 6 },
-  { item: "Yoduro de potasio 130 mg", qty: 24, min: 20 },
-  { item: "Ondansetrón 8 mg", qty: 9, min: 10 },
-  { item: "Suero salino 500 mL", qty: 5, min: 4 },
+  { item: "Potassium iodide 130 mg", qty: 24, min: 20 },
+  { item: "Ondansetron 8 mg", qty: 9, min: 10 },
+  { item: "Normal saline 500 mL", qty: 5, min: 4 },
 ];
 
 function CmoView({ sim, triage }: { sim: MissionSim; triage: Triage }) {
@@ -236,7 +236,7 @@ function CmoView({ sim, triage }: { sim: MissionSim; triage: Triage }) {
   return (
     <div className="grid gap-4">
       <Panel
-        title="Formas de onda bioeléctricas · Wavelet-LMS"
+        title="Bioelectric Waveforms · Wavelet-LMS"
         icon={<Activity className="size-3.5 text-hmi" />}
         aside={<span className="telemetry text-xs text-muted-foreground">25 mm/s · 10 mm/mV</span>}
       >
@@ -267,7 +267,7 @@ function CmoView({ sim, triage }: { sim: MissionSim; triage: Triage }) {
           </div>
           <div className="telemetry grid grid-cols-3 gap-2 text-center md:grid-cols-1 md:text-right">
             <div>
-              <p className="label-caps text-nominal">FC</p>
+              <p className="label-caps text-nominal">HR</p>
               <p className="text-3xl font-semibold text-nominal">{v.hr}</p>
             </div>
             <div>
@@ -275,11 +275,11 @@ function CmoView({ sim, triage }: { sim: MissionSim; triage: Triage }) {
               <p className="text-2xl font-semibold text-advisory">{v.spo2}</p>
             </div>
             <div>
-              <p className="label-caps text-caution">FR</p>
+              <p className="label-caps text-caution">RR</p>
               <p className="text-2xl font-semibold text-caution">{v.rr}</p>
             </div>
             <div className="col-span-3 md:col-span-1">
-              <p className="label-caps text-muted-foreground">PA · PVC</p>
+              <p className="label-caps text-muted-foreground">BP · PVCs</p>
               <p className="text-sm">
                 {v.sys}/{v.dia} · {v.pvcPerMin}/min
               </p>
@@ -291,7 +291,7 @@ function CmoView({ sim, triage }: { sim: MissionSim; triage: Triage }) {
       <AvatarExplorer sim={sim} triage={triage} />
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel
-          title="Diagnóstico diferencial asistido (IA)"
+          title="AI-Assisted Differential Diagnosis"
           icon={<ClipboardList className="size-3.5 text-hmi" />}
         >
           <ul className="grid gap-2">
@@ -311,22 +311,22 @@ function CmoView({ sim, triage }: { sim: MissionSim; triage: Triage }) {
             ))}
           </ul>
           <p className="mt-3 text-[0.7rem] text-muted-foreground">
-            Sugerencia no vinculante · decisión final del CMO.
+            Decision support only · final decision rests with the Flight Surgeon.
           </p>
         </Panel>
-        <Panel title="Guía EVA" icon={<ListChecks className="size-3.5 text-hmi" />}>
+        <Panel title="EVA Guide" icon={<ListChecks className="size-3.5 text-hmi" />}>
           <Instructions
             sim={{ ...sim, scenario: sim.scenario === "nominal" ? "eva" : sim.scenario }}
           />
           {sim.scenario === "nominal" && (
             <p className="mt-2 text-[0.7rem] text-muted-foreground">
-              Vista previa del protocolo de contingencia EVA.
+              Preview of the EVA contingency protocol.
             </p>
           )}
         </Panel>
       </div>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-        <Panel title="Inventario médico a bordo" icon={<Boxes className="size-3.5 text-hmi" />}>
+        <Panel title="Onboard Medical Inventory" icon={<Boxes className="size-3.5 text-hmi" />}>
           <ul className="grid gap-1.5 text-sm">
             {INVENTORY.map((i) => {
               const low = i.qty < i.min;
@@ -340,14 +340,14 @@ function CmoView({ sim, triage }: { sim: MissionSim; triage: Triage }) {
                     {i.item}
                   </span>
                   <span className={cn("telemetry", low ? "text-caution" : "text-muted-foreground")}>
-                    {i.qty} <span className="text-[0.7rem]">/ mín {i.min}</span>
+                    {i.qty} <span className="text-[0.7rem]">/ min {i.min}</span>
                   </span>
                 </li>
               );
             })}
           </ul>
         </Panel>
-        <TrendPanel scenario={sim.scenario} title="Tendencias clínicas" />
+        <TrendPanel scenario={sim.scenario} title="Clinical Trends" />
       </div>
     </div>
   );

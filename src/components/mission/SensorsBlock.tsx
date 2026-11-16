@@ -31,10 +31,10 @@ function Sensor({ name, pct }: { name: string; pct: number }) {
             online ? "text-nominal" : "text-emergency",
           )}
           role="status"
-          aria-label={`${name}: ${online ? "Operativo" : "Fallo o desconectado"}`}
+          aria-label={`${name}: ${online ? "Operational" : "Failed or disconnected"}`}
         >
           <span className={cn("size-2 rounded-full", online ? "bg-nominal" : "bg-emergency")} />
-          {online ? "Operativo" : "Sin conexión"}
+          {online ? "OPERATIONAL" : "OFFLINE"}
         </span>
         <Battery pct={pct} />
       </span>

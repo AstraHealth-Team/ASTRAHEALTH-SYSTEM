@@ -5,9 +5,9 @@ import type { MissionSim } from "@/hooks/use-mission-sim";
 import { ChangeHistoryBell } from "./ChangeHistoryBell";
 
 const VIEWS: { id: ViewMode; label: string; icon: typeof User }[] = [
-  { id: "astronaut", label: "Astronauta", icon: User },
-  { id: "cmo", label: "Médico", icon: Stethoscope },
-  { id: "systems", label: "Sistemas", icon: Cpu },
+  { id: "astronaut", label: "Astronaut", icon: User },
+  { id: "cmo", label: "Physician", icon: Stethoscope },
+  { id: "systems", label: "Systems", icon: Cpu },
 ];
 
 export function TopBar({ sim, onStartVoice }: { sim: MissionSim; onStartVoice: () => void }) {
@@ -24,7 +24,7 @@ export function TopBar({ sim, onStartVoice }: { sim: MissionSim; onStartVoice: (
 
       <nav
         role="tablist"
-        aria-label="Vista de la misión"
+        aria-label="Mission view"
         className="flex min-w-0 shrink items-center gap-0.5 rounded-xl bg-muted/60 p-1 sm:gap-1"
       >
         {VIEWS.map((view) => {
@@ -54,12 +54,12 @@ export function TopBar({ sim, onStartVoice }: { sim: MissionSim; onStartVoice: (
         <button
           type="button"
           onClick={onStartVoice}
-          aria-label="Iniciar Consulta IA por Voz"
+          aria-label="Start Voice AI Consultation"
           className="flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-voice px-2.5 text-xs font-semibold text-voice-foreground shadow-[0_0_24px_-8px_var(--voice-glow)] transition-all hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-voice-glow sm:px-4 sm:text-sm"
         >
           <AudioLines className="size-4" />
-          <span className="hidden lg:inline">Iniciar Consulta IA por Voz</span>
-          <span className="hidden min-[420px]:inline lg:hidden">Consulta IA</span>
+          <span className="hidden lg:inline">Start Voice AI Consultation</span>
+          <span className="hidden min-[420px]:inline lg:hidden">Voice AI</span>
         </button>
         <ChangeHistoryBell history={sim.triage.history} onReset={sim.triage.resetAll} />
       </div>

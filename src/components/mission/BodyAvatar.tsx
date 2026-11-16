@@ -28,9 +28,9 @@ const HOTSPOTS: Record<
 };
 
 const SHORT: Record<TriageSystem, string> = {
-  neuro: "Neurológico",
-  cardio: "Cardiaco",
-  resp: "Respiratorio",
+  neuro: "Neurological",
+  cardio: "Cardiac",
+  resp: "Respiratory",
 };
 
 export function BodyAvatar({
@@ -47,7 +47,7 @@ export function BodyAvatar({
       viewBox="-30 0 310 420"
       className="mx-auto h-full max-h-[440px] w-full"
       role="group"
-      aria-label="Avatar anatómico de triaje"
+      aria-label="Anatomical triage avatar"
     >
       <defs>
         <radialGradient id="body-glow" cx="50%" cy="40%" r="60%">
@@ -162,7 +162,7 @@ export function BodyAvatar({
                     level === "red" ? "fill-emergency" : "fill-warning",
                   )}
                 >
-                  {SHORT[system]} · {level === "red" ? "ROJO" : "AMARILLO"}
+                  {SHORT[system]} · {level === "red" ? "CRITICAL" : "CAUTION"}
                 </text>
                 <foreignObject x={hotspot.cardX + 6} y={hotspot.cardY + 18} width="114" height="37">
                   <p

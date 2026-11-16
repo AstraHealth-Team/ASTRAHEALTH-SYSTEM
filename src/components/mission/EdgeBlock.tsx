@@ -14,19 +14,19 @@ export function EdgeBlock({ sim }: { sim: MissionSim }) {
       block="edge"
       aside={
         <span className="telemetry flex items-center gap-1 text-[0.7rem] text-muted-foreground">
-          <FileJson className="size-3" /> {fhirCount.toLocaleString("es")} FHIR
+          <FileJson className="size-3" /> {fhirCount.toLocaleString("en")} FHIR
         </span>
       }
     >
       <div className="grid gap-2.5">
-        <Node title="Filtro Wavelet-LMS" sub="ECG derivación II · ruido EMG suprimido">
+        <Node title="Wavelet-LMS Filter" sub="Lead II ECG · EMG noise suppressed">
           <WaveCanvas hr={vitals.hr} pvcPerMin={vitals.pvcPerMin} className="text-edge" height={64} />
         </Node>
 
         <Node title="TinyML (1D-CNN + Autoencoder)" sub="Inferencia local · 38 kB int8">
           <div className="text-xs">
             <div className="mb-1 flex justify-between">
-              <span className="text-muted-foreground">Error de reconstrucción</span>
+              <span className="text-muted-foreground">Reconstruction Error</span>
               <span className={cn("telemetry", anomaly ? "text-warning" : "text-edge")}>
                 {xai.reconstructionError.toFixed(3)} / {xai.threshold}
               </span>
@@ -41,10 +41,10 @@ export function EdgeBlock({ sim }: { sim: MissionSim }) {
           </div>
         </Node>
 
-        <Node title="Motor XAI" sub="(Explicabilidad)" right={<BrainCircuit className="size-4" />}>
+        <Node title="XAI Engine" sub="(Explainability)" right={<BrainCircuit className="size-4" />}>
           <p className="text-sm leading-snug">
-            Clasificación {xai.classifier}:{" "}
-            <b className="text-edge">{Math.round(xai.confidence * 100)}% confianza</b> — {xai.label}
+            Classification {xai.classifier}:{" "}
+            <b className="text-edge">{Math.round(xai.confidence * 100)}% confidence</b> — {xai.label}
           </p>
           <ul className="mt-2 grid gap-1.5">
             {xai.factors.map((f) => (
@@ -63,16 +63,16 @@ export function EdgeBlock({ sim }: { sim: MissionSim }) {
             <UserCheck className="size-3.5 text-edge" />
             <span className="mr-auto text-[0.7rem] text-muted-foreground">Human-in-the-Loop</span>
             <button
-              onClick={() => toast.success("Diagnóstico confirmado por la tripulación", { description: xai.label })}
+              onClick={() => toast.success("Diagnosis confirmed by crew", { description: xai.label })}
               className="flex min-h-9 items-center gap-1 rounded-md bg-edge/15 px-2.5 text-xs font-medium text-edge hover:bg-edge/25"
             >
-              <Check className="size-3.5" /> Confirmar
+              <Check className="size-3.5" /> Confirm
             </button>
             <button
-              onClick={() => toast("Clasificación descartada", { description: "Se registra como retroalimentación para el modelo." })}
+              onClick={() => toast("Classification dismissed", { description: "Recorded as model feedback." })}
               className="flex min-h-9 items-center gap-1 rounded-md bg-muted px-2.5 text-xs font-medium hover:bg-accent"
             >
-              <X className="size-3.5" /> Descartar
+              <X className="size-3.5" /> Dismiss
             </button>
           </div>
         </Node>

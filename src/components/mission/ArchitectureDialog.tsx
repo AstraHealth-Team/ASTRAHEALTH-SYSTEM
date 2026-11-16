@@ -4,37 +4,37 @@ import { ALERT_LABEL, SCENARIOS, type AlertLevel } from "@/lib/mission";
 import type { MissionSim } from "@/hooks/use-mission-sim";
 import { BLOCKS, type BlockKey } from "./kit";
 
-/* ---------- Diagram geometry (mirrors "Arquitectura para el NSA.png", 1920×476) ---------- */
+/* ---------- Diagram geometry (mirrors the official architecture diagram, 1920×476) ---------- */
 
 type Box = { x: number; y: number; w: number; h: number; lines: string[]; id: string };
 
 const FRAMES: { block: BlockKey; x: number; y: number; w: number; h: number; title: string }[] = [
-  { block: "sensors", x: 8, y: 8, w: 289, h: 460, title: "1. SENSORES (IEEE 11073)" },
-  { block: "dtn", x: 328, y: 160, w: 465, h: 155, title: "2. RED ESPACIAL (DTN)" },
+  { block: "sensors", x: 8, y: 8, w: 289, h: 460, title: "1. SENSORS (IEEE 11073)" },
+  { block: "dtn", x: 328, y: 160, w: 465, h: 155, title: "2. SPACE NETWORK (DTN)" },
   { block: "edge", x: 850, y: 181, w: 668, h: 114, title: "3. EDGE AI → HL7 FHIR R4" },
-  { block: "hmi", x: 1552, y: 52, w: 360, h: 371, title: "4. INTERFAZ HMI (NASA-STD-3001)" },
+  { block: "hmi", x: 1552, y: 52, w: 360, h: 371, title: "4. HMI (NASA-STD-3001)" },
 ];
 
 const NODES: Record<BlockKey, Box[]> = {
   sensors: [
-    { id: "biomon", x: 70, y: 45, w: 158, h: 60, lines: ["CSA Bio-Monitor", "(ECG, PA, HRV)"] },
-    { id: "acti", x: 64, y: 153, w: 164, h: 60, lines: ["Actiwatch / Oura", "(Sueño, Luz)"] },
-    { id: "rad", x: 67, y: 262, w: 161, h: 80, lines: ["ISS-RAD + CANS", "(Radiación", "Neutrones)"] },
-    { id: "oct", x: 62, y: 391, w: 167, h: 60, lines: ["OCT / Telemetría", "(Síndrome SANS)"] },
+    { id: "biomon", x: 70, y: 45, w: 158, h: 60, lines: ["CSA Bio-Monitor", "(ECG, BP, HRV)"] },
+    { id: "acti", x: 64, y: 153, w: 164, h: 60, lines: ["Actiwatch / Oura", "(Sleep, Light)"] },
+    { id: "rad", x: 67, y: 262, w: 161, h: 80, lines: ["ISS-RAD + CANS", "(Radiation", "Neutrons)"] },
+    { id: "oct", x: 62, y: 391, w: 167, h: 60, lines: ["OCT / Telemetry", "(SANS)"] },
   ],
   dtn: [
-    { id: "gw", x: 361, y: 226, w: 167, h: 44, lines: ["Gateway A Bordo"] },
-    { id: "queue", x: 586, y: 197, w: 174, h: 102, lines: ["Cola", "Store-and-Forward", "(0s LEO -> 24m", "Marte)"] },
+    { id: "gw", x: 361, y: 226, w: 167, h: 44, lines: ["Onboard Gateway"] },
+    { id: "queue", x: 586, y: 197, w: 174, h: 102, lines: ["Queue", "Store-and-Forward", "(0 s LEO → 24 min", "Mars)"] },
   ],
   edge: [
-    { id: "wavelet", x: 882, y: 226, w: 174, h: 44, lines: ["Filtro Wavelet-LMS"] },
+    { id: "wavelet", x: 882, y: 226, w: 174, h: 44, lines: ["Wavelet-LMS Filter"] },
     { id: "tinyml", x: 1114, y: 217, w: 169, h: 62, lines: ["TinyML (1D-CNN +", "Autoencoder)"] },
-    { id: "xai", x: 1340, y: 217, w: 145, h: 62, lines: ["Motor XAI", "(Explicabilidad)"] },
+    { id: "xai", x: 1340, y: 217, w: 145, h: 62, lines: ["XAI Engine", "(Explainability)"] },
   ],
   hmi: [
-    { id: "astro", x: 1653, y: 89, w: 164, h: 80, lines: ["Modo Astronauta", "(Semáforo +", "Gamificación)"] },
-    { id: "cmo", x: 1649, y: 218, w: 182, h: 60, lines: ["Modo Médico", "(Ondas + Guía EVA)"] },
-    { id: "alerts", x: 1649, y: 327, w: 143, h: 80, lines: ["Alertas Duales", "(Emergency /", "Warning)"] },
+    { id: "astro", x: 1653, y: 89, w: 164, h: 80, lines: ["Astronaut View", "(Health Status +", "Engagement)"] },
+    { id: "cmo", x: 1649, y: 218, w: 182, h: 60, lines: ["Physician View", "(Waveforms + EVA Guide)"] },
+    { id: "alerts", x: 1649, y: 327, w: 143, h: 80, lines: ["Dual-Coded Alerts", "(Emergency /", "Warning)"] },
   ],
 };
 
@@ -71,7 +71,7 @@ function activeNodes(sim: MissionSim): Set<string> {
 function Diagram({ sim }: { sim: MissionSim }) {
   const active = activeNodes(sim);
   return (
-    <svg viewBox="0 0 1920 476" className="h-auto w-full min-w-[960px]" role="img" aria-label="Flujo de arquitectura: IEEE 11073 → DTN → Edge AI y HL7 FHIR R4 → Interfaz HMI">
+    <svg viewBox="0 0 1920 476" className="h-auto w-full min-w-[960px]" role="img" aria-label="Architecture flow: IEEE 11073 → DTN → Edge AI and HL7 FHIR R4 → HMI">
       <defs>
         <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
           <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--foreground)" strokeWidth="1.6" />
@@ -150,8 +150,8 @@ function usePayloads(sim: MissionSim) {
         version: 7,
         bundleProcessingFlags: "0x0044 (status reports · no fragment)",
         crcType: "CRC-32C",
-        destination: "ipn:399.1 (MCC · Cirujano de Vuelo)",
-        source: "ipn:1001.7 (Gateway a bordo)",
+        destination: "ipn:399.1 (MCC · Flight Surgeon)",
+        source: "ipn:1001.7 (Onboard Gateway)",
         reportTo: "ipn:1001.0",
         creationTimestamp: [now.getTime() - dtnEpoch, sim.dtn.generated],
         lifetime_ms: 86_400_000,
@@ -166,9 +166,9 @@ function usePayloads(sim: MissionSim) {
         bytes: 1432,
       },
       convergenceLayer: {
-        link: sim.link.realtime ? `AOS · ${sim.link.linkName}` : "LOS · enlace con Tierra interrumpido",
+        link: sim.link.realtime ? `AOS · ${sim.link.linkName}` : "LOS · Earth link unavailable",
         oneWayLightTime_s: sim.link.latencySeconds,
-        action: sim.link.realtime ? "forward" : "store (custodia) · forward en próxima ventana de contacto",
+        action: sim.link.realtime ? "forward" : "store (custody) · forward during next contact window",
         queued: sim.dtn.queued,
       },
     };
@@ -213,7 +213,7 @@ function usePayloads(sim: MissionSim) {
     const top = sim.alerts[0];
     const hmi = {
       standard: "NASA-STD-3001 Vol. 2 · Dual Coding",
-      view: sim.view === "astronaut" ? "Modo Astronauta" : sim.view === "cmo" ? "Modo Médico" : "Modo Sistemas",
+      view: sim.view === "astronaut" ? "Astronaut" : sim.view === "cmo" ? "Physician" : "Systems",
       scenario: SCENARIOS[sim.scenario].title,
       activeAlert: top
         ? { level: ALERT_LABEL[top.level], color: HEX[top.level], icon: ICON[top.level], label: top.title, blink: top.level === "emergency" }
@@ -226,10 +226,10 @@ function usePayloads(sim: MissionSim) {
 }
 
 const TABS: { key: "ieee" | "bundle" | "fhir" | "hmi"; block: BlockKey; label: string }[] = [
-  { key: "ieee", block: "sensors", label: "IEEE 11073 · captura" },
+  { key: "ieee", block: "sensors", label: "IEEE 11073 · Acquisition" },
   { key: "bundle", block: "dtn", label: "DTN Bundle · RFC 9171" },
   { key: "fhir", block: "edge", label: "HL7 FHIR R4 · Observation / DeviceMetric" },
-  { key: "hmi", block: "hmi", label: "Alerta HMI · NASA-STD-3001" },
+  { key: "hmi", block: "hmi", label: "HMI Alert · NASA-STD-3001" },
 ];
 
 export function ArchitectureView({ sim }: { sim: MissionSim }) {
@@ -237,17 +237,17 @@ export function ArchitectureView({ sim }: { sim: MissionSim }) {
   const payloads = usePayloads(sim);
   const current = TABS.find((t) => t.key === tab)!;
   const live: Record<BlockKey, string> = {
-    sensors: `FC ${sim.vitals.hr} bpm · PA ${sim.vitals.sys}/${sim.vitals.dia} · SpO2 ${sim.vitals.spo2}%`,
-    dtn: `${sim.link.latencyLabel} · ${sim.dtn.queued.toLocaleString("es")} en cola · ${sim.link.realtime ? "AOS" : "LOS"}`,
+    sensors: `HR ${sim.vitals.hr} bpm · BP ${sim.vitals.sys}/${sim.vitals.dia} · SpO2 ${sim.vitals.spo2}%`,
+    dtn: `${sim.link.latencyLabel} · ${sim.dtn.queued.toLocaleString("en")} queued · ${sim.link.realtime ? "AOS" : "LOS"}`,
     edge: `${sim.xai.classifier} ${Math.round(sim.xai.confidence * 100)}% · ${sim.xai.label}`,
-    hmi: sim.alerts[0] ? `${ALERT_LABEL[sim.alerts[0].level]} · ${sim.alerts[0].title}` : "Sin alertas",
+    hmi: sim.alerts[0] ? `${ALERT_LABEL[sim.alerts[0].level]} · ${sim.alerts[0].title}` : "No alerts",
   };
   return (
     <section className="panel grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 p-4 sm:p-5" aria-labelledby="architecture-heading">
         <header className="min-w-0">
-          <h2 id="architecture-heading" className="text-lg font-semibold">Arquitectura técnica · flujo de datos en tiempo real</h2>
+          <h2 id="architecture-heading" className="text-lg font-semibold">Technical Architecture · Real-Time Data Flow</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Sensores IEEE 11073 → Red Espacial DTN → Edge AI y HL7 FHIR R4 → Interfaz HMI NASA-STD-3001.
+            IEEE 11073 Sensors → DTN Space Network → Edge AI and HL7 FHIR R4 → NASA-STD-3001 HMI.
           </p>
         </header>
 
@@ -267,7 +267,7 @@ export function ArchitectureView({ sim }: { sim: MissionSim }) {
         </div>
 
         <div>
-          <div className="mb-2 flex flex-wrap gap-1.5" role="tablist" aria-label="Recurso inspeccionado">
+          <div className="mb-2 flex flex-wrap gap-1.5" role="tablist" aria-label="Inspected resource">
             {TABS.map((t) => (
               <button
                 key={t.key}

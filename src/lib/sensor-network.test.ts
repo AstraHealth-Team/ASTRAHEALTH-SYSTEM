@@ -10,10 +10,10 @@ describe("biomedical sensor telemetry", () => {
     const sensors = getBiomedicalSensorTelemetry(0);
 
     expect(sensors.map((sensor) => sensor.name)).toEqual([
-      "Monitor Cardíaco",
-      "Oxímetro / Sueño",
-      "Dosímetro Radiación",
-      "Biometría Traje",
+      "Cardiac Monitor",
+      "Oximeter / Sleep",
+      "Radiation Dosimeter",
+      "Suit Biometrics",
     ]);
     expect(sensors.every((sensor) => sensor.online && sensor.connectivity === "connected")).toBe(
       true,

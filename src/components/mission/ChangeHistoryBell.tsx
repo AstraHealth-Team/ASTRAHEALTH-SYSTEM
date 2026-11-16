@@ -12,14 +12,14 @@ export function ChangeHistoryBell({
   onReset: () => void;
 }) {
   const [open, setOpen] = useState(false);
-  const eventCount = history.length === 1 ? "1 evento" : `${history.length} eventos`;
+  const eventCount = history.length === 1 ? "1 event" : `${history.length} events`;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label={`Historial de cambios: ${eventCount}`}
+          aria-label={`Change History: ${eventCount}`}
           className="relative grid size-10 shrink-0 place-items-center rounded-full border border-border bg-background/60 text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-voice-glow"
         >
           <Bell className="size-4" aria-hidden />
@@ -38,16 +38,16 @@ export function ChangeHistoryBell({
         sideOffset={8}
         className="w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden p-0"
       >
-        <section aria-label="Historial de cambios">
+        <section aria-label="Change History">
           <header className="border-b border-border px-4 py-3">
-            <h2 className="label-caps text-foreground">Historial de Cambios</h2>
+            <h2 className="label-caps text-foreground">Change History</h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              {history.length} {history.length === 1 ? "evento reciente" : "eventos recientes"}
+              {history.length} {history.length === 1 ? "recent event" : "recent events"}
             </p>
           </header>
           {history.length === 0 ? (
             <p className="px-4 py-5 text-sm text-muted-foreground">
-              Sin cambios registrados; telemetría nominal.
+              No changes recorded; telemetry nominal.
             </p>
           ) : (
             <ol className="grid max-h-72 gap-1 overflow-y-auto p-3">
@@ -73,7 +73,7 @@ export function ChangeHistoryBell({
                     {LEVEL_NAME[entry.level]} — {entry.finding}
                   </span>
                   <time className="telemetry shrink-0 text-[0.65rem] text-muted-foreground">
-                    {new Date(entry.at).toLocaleTimeString("es", {
+                    {new Date(entry.at).toLocaleTimeString("en", {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
@@ -92,7 +92,7 @@ export function ChangeHistoryBell({
               className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-nominal/50 bg-nominal/10 px-3 text-xs font-semibold text-nominal transition-colors hover:bg-nominal/20"
             >
               <RotateCcw className="size-4" aria-hidden />
-              Restablecer Todo a Verde
+              Reset All to Nominal
             </button>
           </footer>
         </section>

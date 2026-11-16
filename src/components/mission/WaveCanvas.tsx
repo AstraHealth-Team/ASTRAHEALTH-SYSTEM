@@ -124,7 +124,7 @@ export function WaveCanvas({
   return (
     <div className="relative">
       {label && <span className="label-caps absolute left-2 top-1 text-muted-foreground">{label}</span>}
-      <canvas ref={ref} className={cn("block w-full", className)} style={{ height }} aria-label={label ?? "Forma de onda"} role="img" />
+      <canvas ref={ref} className={cn("block w-full", className)} style={{ height }} aria-label={label ?? "Waveform"} role="img" />
     </div>
   );
 }

@@ -17,13 +17,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Consola médica aeroespacial NASA-STD-3001: sensores IEEE 11073, red DTN, Edge AI + FHIR R4 y alertas duales para misiones LEO, Luna y Marte.",
+          "Aerospace medical console aligned with NASA-STD-3001, IEEE 11073 sensors, DTN networking, edge AI, HL7 FHIR R4, and dual-coded alerts for LEO, lunar, and Mars missions.",
       },
       { property: "og:title", content: "ASTRA Health HMI | NASA Space Apps 2026" },
       {
         property: "og:description",
         content:
-          "Prototipo interactivo de monitoreo de salud de astronautas con simulador de latencia y escenarios de emergencia.",
+          "Interactive astronaut health monitoring prototype with communications latency simulation and medical contingency scenarios.",
       },
       { property: "og:type", content: "website" },
       { property: "og:image", content: "/logo-astrahealth.png" },
@@ -65,7 +65,7 @@ function Index() {
 
       <footer className="panel flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-xs text-muted-foreground">
         <p>
-          Basado en NASA-STD-3001 Vol. 2 · NASA NPR 7150.2D · NASA HRP (ExMC) · Canadian Space
+          Based on NASA-STD-3001 Vol. 2 · NASA NPR 7150.2D · NASA HRP (ExMC) · Canadian Space
           Agency (CSA) · IEEE 11073 · HL7 FHIR R4 · RFC 9171
         </p>
       </footer>

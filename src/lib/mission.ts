@@ -51,15 +51,15 @@ export interface LinkState {
   linkName: string;
   /** Real-time link with Earth available */
   realtime: boolean;
-  /** "Autonomía Médica Local + Cola DTN Store-and-Forward" */
+  /** Local medical autonomy with a DTN store-and-forward queue. */
   localAutonomy: boolean;
   modeLabel: string;
 }
 
 export const PROFILE_META: Record<MissionProfile, { label: string; short: string }> = {
-  leo: { label: "Órbita Baja (ISS / LEO)", short: "LEO" },
-  lunar: { label: "Órbita Lunar (Artemis)", short: "Luna" },
-  mars: { label: "Tránsito a Marte", short: "Marte" },
+  leo: { label: "Low Earth Orbit (ISS / LEO)", short: "LEO" },
+  lunar: { label: "Lunar Orbit (Artemis)", short: "Lunar" },
+  mars: { label: "Mars Transit", short: "Mars" },
 };
 
 export function clampMarsMinutes(minutes: number): number {
@@ -72,10 +72,10 @@ export function getLinkState(profile: MissionProfile, marsMinutes = 12): LinkSta
       profile,
       latencySeconds: 0,
       latencyLabel: "~0 s",
-      linkName: "TDRSS · tiempo real",
+      linkName: "TDRSS · real time",
       realtime: true,
       localAutonomy: false,
-      modeLabel: "Enlace TDRSS activo en tiempo real",
+      modeLabel: "TDRSS real-time link active",
     };
   }
   if (profile === "lunar") {
@@ -86,7 +86,7 @@ export function getLinkState(profile: MissionProfile, marsMinutes = 12): LinkSta
       linkName: "DSN / LunaNet",
       realtime: true,
       localAutonomy: false,
-      modeLabel: "Triaje biomédico semi-autónomo",
+      modeLabel: "Semi-autonomous biomedical triage",
     };
   }
   const m = clampMarsMinutes(marsMinutes);
@@ -94,10 +94,10 @@ export function getLinkState(profile: MissionProfile, marsMinutes = 12): LinkSta
     profile,
     latencySeconds: m * 60,
     latencyLabel: `${m} min`,
-    linkName: "DSN · enlace interrumpido",
+    linkName: "DSN · intermittent link",
     realtime: false,
     localAutonomy: true,
-    modeLabel: "Autonomía Médica Local + Cola DTN Store-and-Forward",
+    modeLabel: "Local Medical Autonomy + DTN Store-and-Forward Queue",
   };
 }
 
@@ -210,22 +210,22 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
   nominal: {
     id: "nominal",
     index: 1,
-    title: "Rutina Nominal",
+    title: "Nominal Operations",
     time: "06:30 UTC",
-    summary: "Signos estables, sincronización nocturna completada y rutina diaria lista.",
+    summary: "Stable vital signs, overnight synchronization complete, and daily schedule ready.",
     vitals: NOMINAL_VITALS,
     instructions: [
-      "Desayuno y suplementación de Vitamina B (prevención ocular).",
-      "Sesión ARED de resistencia a las 09:00 (60 min).",
-      "Hidratación: 500 mL antes del bloque de experimentos.",
+      "Breakfast and vitamin B supplementation (ocular health).",
+      "ARED resistance exercise at 09:00 (60 min).",
+      "Hydration: 500 mL before the experiment block.",
     ],
   },
   eva: {
     id: "eva",
     index: 2,
-    title: "Contingencia en EVA (Arritmia)",
+    title: "EVA Contingency (Arrhythmia)",
     time: "EVA +02:14",
-    summary: "Extrasístoles ventriculares (PVCs > 6/min) durante caminata espacial.",
+    summary: "Premature ventricular contractions (PVCs > 6/min) during spacewalk.",
     vitals: {
       ...NOMINAL_VITALS,
       hr: 132,
@@ -239,14 +239,14 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
       co2: 3.1,
       suitO2: 71,
     },
-    instructions: ["Reducir tasa metabólica.", "Pausar caminata EVA.", "Verificar O2 del traje."],
+    instructions: ["Reduce metabolic demand.", "Pause the EVA.", "Check suit O2."],
   },
   spe: {
     id: "spe",
     index: 3,
-    title: "Tormenta Solar / SPE",
+    title: "Solar Particle Event (SPE)",
     time: "SPE · T+00:03",
-    summary: "Pico de protones solares > 150 mSv/h detectado por ISS-RAD / CANS.",
+    summary: "Solar proton flux > 150 mSv/h detected by ISS-RAD / CANS.",
     vitals: {
       ...NOMINAL_VITALS,
       hr: 94,
@@ -258,9 +258,9 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
       neutronFlux: 4.8,
     },
     instructions: [
-      "Evacuar de inmediato al refugio blindado (Storm Shelter).",
-      "Colocar dosímetro personal y cerrar escotilla del módulo.",
-      "Permanecer hasta que ISS-RAD reporte < 0.5 mSv/h.",
+      "Evacuate immediately to the radiation shelter (Storm Shelter).",
+      "Wear a personal dosimeter and close the module hatch.",
+      "Remain until ISS-RAD reports < 0.5 mSv/h.",
     ],
   },
 };
@@ -289,8 +289,8 @@ export function buildAlerts(vitals: Vitals, link: LinkState): Alert[] {
     alerts.push({
       id: "spe",
       level: "emergency",
-      title: "Evento de partículas solares",
-      detail: `Tasa ${(vitals.radRateUSvH / 1000).toFixed(0)} mSv/h · Evacuar al Storm Shelter`,
+      title: "Solar Particle Event",
+      detail: `Dose rate ${(vitals.radRateUSvH / 1000).toFixed(0)} mSv/h · Evacuate to the Storm Shelter`,
       source: "ISS-RAD + CANS",
     });
   }
@@ -299,8 +299,8 @@ export function buildAlerts(vitals: Vitals, link: LinkState): Alert[] {
     alerts.push({
       id: "pvc",
       level: "warning",
-      title: "Extrasístoles ventriculares",
-      detail: `PVCs ${vitals.pvcPerMin}/min · FC ${vitals.hr} bpm`,
+      title: "Premature Ventricular Contractions",
+      detail: `PVCs ${vitals.pvcPerMin}/min · HR ${vitals.hr} bpm`,
       source: "CSA Bio-Monitor · 1D-CNN",
     });
   }
@@ -309,9 +309,9 @@ export function buildAlerts(vitals: Vitals, link: LinkState): Alert[] {
     alerts.push({
       id: "suit-o2",
       level: "warning",
-      title: "Reserva O2 del traje",
-      detail: `EMU O2 ${vitals.suitO2}% · verificar consumo`,
-      source: "Telemetría EMU",
+      title: "Suit O2 Reserve",
+      detail: `EMU O2 ${vitals.suitO2}% · check consumption`,
+      source: "EMU Telemetry",
     });
   }
 
@@ -319,17 +319,17 @@ export function buildAlerts(vitals: Vitals, link: LinkState): Alert[] {
     alerts.push({
       id: "sans",
       level: "warning",
-      title: "Desplazamiento hiperópico SANS",
+      title: "SANS Hyperopic Shift",
       detail: `+${vitals.refractiveShiftD.toFixed(2)} D ≥ +0.75 D`,
-      source: "OCT / Telemetría",
+      source: "OCT / Telemetry",
     });
   } else if (vitals.refractiveShiftD >= 0.5) {
     alerts.push({
       id: "sans-trend",
       level: "caution",
-      title: "Tendencia refractiva SANS",
-      detail: `+${vitals.refractiveShiftD.toFixed(2)} D · vigilar (umbral +0.75 D)`,
-      source: "OCT / Telemetría",
+      title: "SANS Refractive Trend",
+      detail: `+${vitals.refractiveShiftD.toFixed(2)} D · monitor (threshold +0.75 D)`,
+      source: "OCT / Telemetry",
     });
   }
 
@@ -337,8 +337,8 @@ export function buildAlerts(vitals: Vitals, link: LinkState): Alert[] {
     alerts.push({
       id: "co2",
       level: "caution",
-      title: "CO2 de cabina elevado",
-      detail: `ppCO2 ${vitals.co2.toFixed(1)} mmHg · objetivo < 2.0`,
+      title: "Elevated Cabin CO2",
+      detail: `ppCO2 ${vitals.co2.toFixed(1)} mmHg · target < 2.0`,
       source: "ECLSS",
     });
   }
@@ -346,18 +346,18 @@ export function buildAlerts(vitals: Vitals, link: LinkState): Alert[] {
   alerts.push({
     id: "sync",
     level: "advisory",
-    title: "Sincronización nocturna completada",
-    detail: "Bio-Monitor y Actiwatch → LSAH",
-    source: "Red DTN",
+    title: "Overnight Synchronization Complete",
+    detail: "Bio-Monitor and Actiwatch → LSAH",
+    source: "DTN Network",
   });
 
   if (link.localAutonomy) {
     alerts.push({
       id: "autonomy",
       level: "advisory",
-      title: "Autonomía Médica Local activa",
-      detail: `Latencia ${link.latencyLabel} · Cola DTN Store-and-Forward`,
-      source: "Gateway a bordo",
+      title: "Local Medical Autonomy Active",
+      detail: `Latency ${link.latencyLabel} · DTN Store-and-Forward Queue`,
+      source: "Onboard Gateway",
     });
   }
 
@@ -390,11 +390,11 @@ export function overallLevel(visible: Alert[]): HealthLevel {
 }
 
 export const OVERALL_LABEL: Record<HealthLevel, string> = {
-  nominal: "ESTADO NOMINAL",
-  advisory: "ESTADO NOMINAL",
-  caution: "VIGILANCIA",
-  warning: "ACCIÓN RÁPIDA",
-  emergency: "EMERGENCIA",
+  nominal: "NOMINAL STATUS",
+  advisory: "NOMINAL STATUS",
+  caution: "MONITOR",
+  warning: "PROMPT ACTION",
+  emergency: "EMERGENCY",
 };
 
 /* ------------------------------------------------------------------ */
@@ -426,11 +426,11 @@ export function systemLevel(system: SystemId, v: Vitals): HealthLevel {
 }
 
 export const SYSTEM_META: Record<SystemId, { title: string; subtitle: string }> = {
-  cardio: { title: "Cardiaco", subtitle: "FC · PA · HRV · cefalización" },
-  neuro: { title: "Neurológico", subtitle: "Conciencia · SANS · RNFL · PIO" },
-  resp: { title: "Respiratorio", subtitle: "SpO2 · FR · ppCO2 · O2 del traje" },
-  radiation: { title: "Radiación Ionizante", subtitle: "ISS-RAD · Radi-N2 · CANS" },
-  msk: { title: "Sueño, Cognición y Musculoesquelético", subtitle: "Sueño · fatiga · DMO" },
+  cardio: { title: "Cardiac", subtitle: "HR · BP · HRV · cephalad fluid shift" },
+  neuro: { title: "Neurological", subtitle: "Consciousness · SANS · RNFL · IOP" },
+  resp: { title: "Respiratory", subtitle: "SpO2 · RR · ppCO2 · suit O2" },
+  radiation: { title: "Ionizing Radiation", subtitle: "ISS-RAD · Radi-N2 · CANS" },
+  msk: { title: "Sleep, Cognition & Musculoskeletal", subtitle: "Sleep · fatigue · BMD" },
 };
 
 export interface ComparisonRow {
@@ -447,14 +447,14 @@ export function systemComparison(system: SystemId, v: Vitals): ComparisonRow[] {
     case "cardio":
       return [
         {
-          label: "Frecuencia cardíaca",
+          label: "Heart Rate",
           unit: "bpm",
           earth: `${e.hr}`,
           space: `${v.hr}`,
           flag: v.hr > 110 ? "caution" : undefined,
         },
         {
-          label: "Presión arterial",
+          label: "Blood Pressure",
           unit: "mmHg",
           earth: `${e.sys}/${e.dia}`,
           space: `${v.sys}/${v.dia}`,
@@ -468,14 +468,14 @@ export function systemComparison(system: SystemId, v: Vitals): ComparisonRow[] {
           flag: v.hrv < 25 ? "caution" : undefined,
         },
         {
-          label: "Extrasístoles (PVC)",
+          label: "Premature Ventricular Contractions (PVCs)",
           unit: "/min",
           earth: "0",
           space: `${v.pvcPerMin}`,
           flag: v.pvcPerMin > PVC_WARNING_THRESHOLD ? "warning" : undefined,
         },
         {
-          label: "Cefalización de fluidos",
+          label: "Cephalad Fluid Shift",
           unit: "L",
           earth: "0.0",
           space: "~1.8",
@@ -484,16 +484,16 @@ export function systemComparison(system: SystemId, v: Vitals): ComparisonRow[] {
       ];
     case "neuro":
       return [
-        { label: "Espesor RNFL", unit: "µm", earth: `${e.rnfl}`, space: `${v.rnfl}` },
+        { label: "Retinal Nerve Fiber Layer (RNFL) Thickness", unit: "µm", earth: `${e.rnfl}`, space: `${v.rnfl}` },
         {
-          label: "Presión intraocular",
+          label: "Intraocular Pressure",
           unit: "mmHg",
           earth: `${e.iop}`,
           space: `${v.iop}`,
           flag: v.iop > 21 ? "caution" : undefined,
         },
         {
-          label: "Desplazamiento hiperópico",
+          label: "Hyperopic Shift",
           unit: "D",
           earth: "+0.00",
           space: `+${v.refractiveShiftD.toFixed(2)}`,
@@ -504,33 +504,33 @@ export function systemComparison(system: SystemId, v: Vitals): ComparisonRow[] {
                 ? "caution"
                 : undefined,
         },
-        { label: "Umbral SANS", unit: "D", earth: "—", space: "≥ +0.75" },
+        { label: "SANS Threshold", unit: "D", earth: "—", space: "≥ +0.75" },
       ];
     case "resp":
       return [
         {
-          label: "Saturación O2 (SpO2)",
+          label: "Oxygen Saturation (SpO2)",
           unit: "%",
           earth: `${e.spo2}`,
           space: `${v.spo2}`,
           flag: v.spo2 < 90 ? "emergency" : v.spo2 < 94 ? "caution" : undefined,
         },
         {
-          label: "Frecuencia respiratoria",
+          label: "Respiratory Rate",
           unit: "/min",
           earth: `${e.rr}`,
           space: `${v.rr}`,
           flag: v.rr > 22 ? "caution" : undefined,
         },
         {
-          label: "ppCO2 cabina",
+          label: "Cabin ppCO2",
           unit: "mmHg",
           earth: `${e.co2}`,
           space: v.co2.toFixed(1),
           flag: v.co2 > 3 ? "caution" : undefined,
         },
         {
-          label: "O2 del traje (EMU)",
+          label: "Suit O2 (EMU)",
           unit: "%",
           earth: "100",
           space: `${v.suitO2}`,
@@ -540,38 +540,38 @@ export function systemComparison(system: SystemId, v: Vitals): ComparisonRow[] {
     case "radiation":
       return [
         {
-          label: "Tasa instantánea",
+          label: "Instantaneous Dose Rate",
           unit: "µSv/h",
           earth: `${e.radRateUSvH}`,
           space: formatRate(v.radRateUSvH),
           flag: v.radRateUSvH > SPE_EMERGENCY_USVH ? "emergency" : undefined,
         },
-        { label: "Dosis acumulada", unit: "mSv", earth: "2.4/año", space: v.cumDoseMSv.toFixed(1) },
+        { label: "Cumulative Dose", unit: "mSv", earth: "2.4/year", space: v.cumDoseMSv.toFixed(1) },
         {
-          label: "Flujo neutrones (CANS)",
+          label: "Neutron Flux (CANS)",
           unit: "n/cm²·s",
           earth: `${e.neutronFlux}`,
           space: v.neutronFlux.toFixed(3),
           flag: v.neutronFlux > 1 ? "emergency" : undefined,
         },
-        { label: "Límite carrera NASA", unit: "mSv", earth: "—", space: "600" },
+        { label: "NASA Career Limit", unit: "mSv", earth: "—", space: "600" },
       ];
     case "msk":
       return [
-        { label: "Eficiencia de sueño", unit: "%", earth: `${e.sleepEff}`, space: `${v.sleepEff}` },
+        { label: "Sleep Efficiency", unit: "%", earth: `${e.sleepEff}`, space: `${v.sleepEff}` },
         {
-          label: "Fatiga pupilar",
+          label: "Pupillary Fatigue",
           unit: "idx",
           earth: `${e.pupilFatigue}`,
           space: `${v.pupilFatigue}`,
         },
         {
-          label: "Pérdida densidad ósea",
+          label: "Bone Density Loss",
           unit: "%/mes",
           earth: "0.0",
           space: v.boneLossPct.toFixed(1),
         },
-        { label: "Masa muscular (cuádriceps)", unit: "%", earth: "100", space: "96.8" },
+        { label: "Muscle Mass (Quadriceps)", unit: "%", earth: "100", space: "96.8" },
       ];
   }
 }
@@ -598,60 +598,60 @@ export function explain(scenario: ScenarioId, v: Vitals): XaiResult {
   if (scenario === "eva") {
     return {
       classifier: "1D-CNN",
-      label: "Extrasistolia ventricular (PVC)",
+      label: "Premature Ventricular Contractions (PVCs)",
       confidence: 0.96,
       reconstructionError: 0.21,
       threshold: 0.08,
       factors: [
         {
-          name: "Elevación de PVCs",
+          name: "PVC Elevation",
           weight: 0.48,
           detail: `${v.pvcPerMin}/min (> ${PVC_WARNING_THRESHOLD})`,
         },
         {
-          name: "Frecuencia cardíaca",
+          name: "Heart Rate",
           weight: 0.27,
           detail: `${v.hr} bpm (+${v.hr - NOMINAL_VITALS.hr})`,
         },
-        { name: "QRS ensanchado", weight: 0.15, detail: "0.14 s en latidos ectópicos" },
+        { name: "Widened QRS", weight: 0.15, detail: "0.14 s in ectopic beats" },
         {
-          name: "Carga metabólica EVA",
+          name: "EVA Metabolic Workload",
           weight: 0.1,
-          detail: `FR ${v.rr}/min · O2 traje ${v.suitO2}%`,
+          detail: `RR ${v.rr}/min · suit O2 ${v.suitO2}%`,
         },
       ],
     };
   }
   if (scenario === "spe") {
     return {
-      classifier: "Fusión dosimétrica",
-      label: "Evento de partículas solares (SPE)",
+      classifier: "Dosimetric Fusion",
+      label: "Solar Particle Event (SPE)",
       confidence: 0.99,
       reconstructionError: 0.34,
       threshold: 0.08,
       factors: [
         {
-          name: "Tasa ISS-RAD",
+          name: "ISS-RAD Dose Rate",
           weight: 0.55,
           detail: `${formatRate(v.radRateUSvH)} (> 150 mSv/h)`,
         },
-        { name: "Neutrones CANS", weight: 0.3, detail: `${v.neutronFlux.toFixed(1)} n/cm²·s` },
-        { name: "Radi-N2 burbujas", weight: 0.1, detail: "Saturación de detectores" },
-        { name: "FC por estrés", weight: 0.05, detail: `${v.hr} bpm` },
+        { name: "CANS Neutrons", weight: 0.3, detail: `${v.neutronFlux.toFixed(1)} n/cm²·s` },
+        { name: "Radi-N2 Bubbles", weight: 0.1, detail: "Detector saturation" },
+        { name: "Stress-Related HR", weight: 0.05, detail: `${v.hr} bpm` },
       ],
     };
   }
   return {
     classifier: "1D-CNN",
-    label: "Ritmo sinusal normal",
+    label: "Normal Sinus Rhythm",
     confidence: 0.98,
     reconstructionError: 0.012,
     threshold: 0.08,
     factors: [
-      { name: "Intervalo RR estable", weight: 0.45, detail: `FC ${v.hr} bpm` },
-      { name: "HRV (RMSSD)", weight: 0.3, detail: `${v.hrv} ms dentro de línea base` },
-      { name: "Sin ectopia", weight: 0.2, detail: "0 PVC/min" },
-      { name: "Morfología QRS", weight: 0.05, detail: "0.09 s" },
+      { name: "Stable RR Interval", weight: 0.45, detail: `HR ${v.hr} bpm` },
+      { name: "HRV (RMSSD)", weight: 0.3, detail: `${v.hrv} ms within baseline` },
+      { name: "No Ectopy", weight: 0.2, detail: "0 PVCs/min" },
+      { name: "QRS Morphology", weight: 0.05, detail: "0.09 s" },
     ],
   };
 }

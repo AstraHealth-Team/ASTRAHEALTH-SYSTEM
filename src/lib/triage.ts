@@ -1,29 +1,29 @@
 /**
  * Voice-triage clinical engine (pure, testable).
  * Classifies the 3 body systems shown on the anatomical avatar
- * (Neurológico, Cardiaco, Respiratorio) as green / yellow / red from
+ * (Neurological, Cardiac, Respiratory) as green / yellow / red from
  * the astronaut's spoken or typed answers fused with live vitals.
  */
 import type { Vitals } from "./mission";
 
 export type TriageSystem = "neuro" | "cardio" | "resp";
 export type TriageLevel = "green" | "yellow" | "red";
-export type TriageSource = "voz" | "texto" | "telemetria" | "simulacion" | "reinicio";
+export type TriageSource = "voice" | "text" | "telemetry" | "simulation" | "reset";
 
 export const TRIAGE_SYSTEMS: TriageSystem[] = ["neuro", "cardio", "resp"];
 
 export const TRIAGE_RANK: Record<TriageLevel, number> = { green: 0, yellow: 1, red: 2 };
 
 export const TRIAGE_META: Record<TriageSystem, { title: string; zone: string }> = {
-  neuro: { title: "Neurológico", zone: "Cabeza · cerebro" },
-  cardio: { title: "Cardiaco", zone: "Tórax central-izquierdo" },
-  resp: { title: "Respiratorio", zone: "Pulmones · tórax bilateral" },
+  neuro: { title: "Neurological", zone: "Head · brain" },
+  cardio: { title: "Cardiac", zone: "Central-left chest" },
+  resp: { title: "Respiratory", zone: "Lungs · bilateral chest" },
 };
 
 export const LEVEL_NAME: Record<TriageLevel, string> = {
-  green: "Verde · Nominal",
-  yellow: "Amarillo · Precaución",
-  red: "Rojo · Crítico",
+  green: "Green · Nominal",
+  yellow: "Yellow · Caution",
+  red: "Red · Critical",
 };
 
 export interface SystemAssessment {
@@ -34,9 +34,9 @@ export interface SystemAssessment {
 export type TriageState = Record<TriageSystem, SystemAssessment>;
 
 export const ALL_GREEN: TriageState = {
-  neuro: { level: "green", finding: "Consciente y orientado · sin hallazgos" },
-  cardio: { level: "green", finding: "Sin dolor torácico · ritmo estable" },
-  resp: { level: "green", finding: "Respiración normal · SpO2 estable" },
+  neuro: { level: "green", finding: "Alert and oriented · no findings" },
+  cardio: { level: "green", finding: "No chest pain · stable rhythm" },
+  resp: { level: "green", finding: "Normal breathing · stable SpO2" },
 };
 
 export function maxLevel(a: TriageLevel, b: TriageLevel): TriageLevel {
@@ -50,18 +50,18 @@ export function maxLevel(a: TriageLevel, b: TriageLevel): TriageLevel {
 export const TRIAGE_QUESTIONS: { system: TriageSystem; text: string; quick: string[] }[] = [
   {
     system: "neuro",
-    text: "Primero, tu estado de conciencia. ¿Estás orientado y alerta? ¿Tienes dolor de cabeza, mareo, confusión o visión borrosa?",
-    quick: ["Estoy bien y orientado", "Tengo dolor de cabeza y mareo", "Me siento confundido"],
+    text: "First, your level of consciousness. Are you alert and oriented? Do you have a headache, dizziness, confusion, or blurred vision?",
+    quick: ["I feel well and oriented", "I have a headache and dizziness", "I feel confused"],
   },
   {
     system: "cardio",
-    text: "Ahora tu corazón. ¿Sientes dolor u opresión en el pecho, palpitaciones o latidos irregulares?",
-    quick: ["Sin dolor en el pecho", "Tengo palpitaciones", "Opresión fuerte en el pecho"],
+    text: "Now, your heart. Are you experiencing chest pain or pressure, palpitations, or an irregular heartbeat?",
+    quick: ["No chest pain", "I have palpitations", "Severe chest pressure"],
   },
   {
     system: "resp",
-    text: "Por último, tu respiración. ¿Tienes dificultad para respirar, falta de aire o sensación de ahogo?",
-    quick: ["Respiro con normalidad", "Me falta un poco el aire", "No puedo respirar bien"],
+    text: "Finally, your breathing. Are you having difficulty breathing, shortness of breath, or a sensation of suffocation?",
+    quick: ["I am breathing normally", "I am slightly short of breath", "I cannot breathe well"],
   },
 ];
 
@@ -78,28 +78,29 @@ interface Rule {
 }
 
 const RULES: Rule[] = [
-  // Neurológico
-  { system: "neuro", level: "red", finding: "Alteración del estado de conciencia", terms: ["inconsciente", "desmay", "perdi el conocimiento", "perdida de conocimiento", "convuls"] },
-  { system: "neuro", level: "red", finding: "Confusión / desorientación", terms: ["confundid", "confusion", "desorientad", "no se donde estoy"] },
-  { system: "neuro", level: "red", finding: "Déficit neurológico focal", terms: ["no puedo hablar", "no puedo mover", "paralisis", "entumecid", "hormigueo en la cara"] },
-  { system: "neuro", level: "yellow", finding: "Cefalea referida", terms: ["dolor de cabeza", "cefalea", "me duele la cabeza", "migrana", "jaqueca"] },
-  { system: "neuro", level: "yellow", finding: "Mareo / vértigo", terms: ["mareo", "marea", "vertigo", "nausea"] },
-  { system: "neuro", level: "yellow", finding: "Alteración visual (posible SANS)", terms: ["vision borrosa", "borros", "veo mal", "presion en los ojos", "dolor en los ojos"] },
-  // Cardiaco
-  { system: "cardio", level: "red", finding: "Dolor torácico opresivo", terms: ["opresion", "dolor fuerte en el pecho", "dolor intenso", "me aprieta el pecho", "brazo izquierdo", "aplast"] },
-  { system: "cardio", level: "yellow", finding: "Palpitaciones / ritmo irregular", terms: ["palpitacion", "irregular", "taquicardia", "corazon acelerado", "latidos fuertes", "se me acelera"] },
-  { system: "cardio", level: "yellow", finding: "Molestia torácica leve", terms: ["dolor en el pecho", "molestia en el pecho", "me duele el pecho", "dolor toracico"] },
-  // Respiratorio
-  { system: "resp", level: "red", finding: "Disnea severa / sensación de ahogo", terms: ["no puedo respirar", "ahog", "asfixi", "labios azules", "cianosis"] },
-  { system: "resp", level: "yellow", finding: "Disnea leve / falta de aire", terms: ["falta el aire", "falta de aire", "me falta", "dificultad para respirar", "cuesta respirar", "respiro rapido", "agitad"] },
-  { system: "resp", level: "yellow", finding: "Tos / irritación respiratoria", terms: ["tos", "me pica la garganta", "flema"] },
+  // Neurological
+  { system: "neuro", level: "red", finding: "Altered level of consciousness", terms: ["unconscious", "faint", "passed out", "lost consciousness", "seizure", "convulsion"] },
+  { system: "neuro", level: "red", finding: "Confusion / disorientation", terms: ["confused", "confusion", "disoriented", "do not know where i am"] },
+  { system: "neuro", level: "red", finding: "Focal neurological deficit", terms: ["cannot speak", "cannot move", "paralysis", "numb", "facial tingling"] },
+  { system: "neuro", level: "yellow", finding: "Reported headache", terms: ["headache", "migraine", "my head hurts"] },
+  { system: "neuro", level: "yellow", finding: "Dizziness / vertigo", terms: ["dizzy", "dizziness", "vertigo", "nausea"] },
+  { system: "neuro", level: "yellow", finding: "Visual disturbance (possible SANS)", terms: ["blurred vision", "blurry", "cannot see clearly", "eye pressure", "eye pain"] },
+  // Cardiac
+  { system: "cardio", level: "red", finding: "Pressure-like chest pain", terms: ["pressure", "severe chest pain", "intense pain", "chest feels tight", "left arm", "crushing"] },
+  { system: "cardio", level: "yellow", finding: "Palpitations / irregular rhythm", terms: ["palpitation", "irregular", "tachycardia", "racing heart", "pounding heartbeat", "heart is racing"] },
+  { system: "cardio", level: "yellow", finding: "Mild chest discomfort", terms: ["chest pain", "chest discomfort", "my chest hurts"] },
+  // Respiratory
+  { system: "resp", level: "red", finding: "Severe dyspnea / sensation of suffocation", terms: ["cannot breathe", "can t breathe", "cannot catch my breath", "choking", "suffocating", "blue lips", "cyanosis"] },
+  { system: "resp", level: "yellow", finding: "Mild dyspnea / shortness of breath", terms: ["short of breath", "shortness of breath", "difficulty breathing", "hard to breathe", "breathing fast", "breathless"] },
+  { system: "resp", level: "yellow", finding: "Cough / respiratory irritation", terms: ["cough", "sore throat", "phlegm"] },
 ];
 
-const NEGATORS = ["no", "sin", "ningun", "ninguna", "nunca", "tampoco", "nada"];
+const NEGATORS = ["no", "not", "without", "never", "neither", "none", "don"];
 
 const NEGATIVE_ANSWER = [
-  "estoy bien", "me siento bien", "todo bien", "normal", "orientad", "alerta", "consciente",
-  "sin dolor", "no tengo", "ninguno", "ninguna", "nada", "respiro bien", "estable", "tranquilo", "no siento",
+  "i am fine", "i feel fine", "i feel well", "all good", "normal", "oriented", "alert",
+  "conscious", "no pain", "i have no", "none", "nothing", "breathing well", "stable", "comfortable", "i do not feel",
+  "no chest pain", "don t have chest pain", "no palpitations", "no shortness of breath", "breathing normally",
 ];
 
 export function normalize(text: string): string {
@@ -107,7 +108,7 @@ export function normalize(text: string): string {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9ñ\s]/g, " ")
+    .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -129,17 +130,17 @@ function findTerm(norm: string, term: string): number {
 export function vitalsTriage(v: Vitals): TriageState {
   const neuro: SystemAssessment =
     v.refractiveShiftD >= 0.75 || v.iop > 21
-      ? { level: "yellow", finding: `Telemetría neuro-ocular: +${v.refractiveShiftD.toFixed(2)} D · PIO ${v.iop} mmHg` }
+      ? { level: "yellow", finding: `Neuro-ocular telemetry: +${v.refractiveShiftD.toFixed(2)} D · IOP ${v.iop} mmHg` }
       : ALL_GREEN.neuro;
 
   let cardio: SystemAssessment = ALL_GREEN.cardio;
-  if (v.hr > 150 || v.pvcPerMin > 15) cardio = { level: "red", finding: `Telemetría: FC ${v.hr} bpm · PVCs ${v.pvcPerMin}/min` };
-  else if (v.pvcPerMin > 6 || v.hr > 110) cardio = { level: "yellow", finding: `Telemetría: PVCs ${v.pvcPerMin}/min · FC ${v.hr} bpm` };
+  if (v.hr > 150 || v.pvcPerMin > 15) cardio = { level: "red", finding: `Telemetry: HR ${v.hr} bpm · PVCs ${v.pvcPerMin}/min` };
+  else if (v.pvcPerMin > 6 || v.hr > 110) cardio = { level: "yellow", finding: `Telemetry: PVCs ${v.pvcPerMin}/min · HR ${v.hr} bpm` };
 
   let resp: SystemAssessment = ALL_GREEN.resp;
-  if (v.spo2 < 90) resp = { level: "red", finding: `Telemetría: SpO2 ${v.spo2}% (< 90%)` };
+  if (v.spo2 < 90) resp = { level: "red", finding: `Telemetry: SpO2 ${v.spo2}% (< 90%)` };
   else if (v.spo2 < 94 || v.rr > 22 || v.co2 > 3 || v.suitO2 < 80)
-    resp = { level: "yellow", finding: `Telemetría: FR ${v.rr}/min · ppCO2 ${v.co2.toFixed(1)} mmHg · O2 traje ${v.suitO2}%` };
+    resp = { level: "yellow", finding: `Telemetry: RR ${v.rr}/min · ppCO2 ${v.co2.toFixed(1)} mmHg · suit O2 ${v.suitO2}%` };
 
   return { neuro, cardio, resp };
 }
@@ -180,7 +181,7 @@ export function evaluateAnswer(text: string, focus: TriageSystem | null, vitals:
 
   // Clinical correlation: reported palpitations + ectopy on telemetry → critical
   if (vitals && best.cardio?.level === "yellow" && vitals.pvcPerMin > 6) {
-    best.cardio = { level: "red", finding: `${best.cardio.finding} + PVCs ${vitals.pvcPerMin}/min en telemetría` };
+    best.cardio = { level: "red", finding: `${best.cardio.finding} + PVCs ${vitals.pvcPerMin}/min on telemetry` };
   }
   // Reported dyspnea + low saturation → critical
   if (vitals && best.resp?.level === "yellow" && vitals.spo2 < 92) {
@@ -206,48 +207,48 @@ export function evaluateAnswer(text: string, focus: TriageSystem | null, vitals:
 
 export const RECOMMENDATIONS: Record<TriageSystem, Record<TriageLevel, string[]>> = {
   neuro: {
-    green: ["Sin hallazgos neurológicos. Continuar rutina y control neuro-ocular semanal (OCT)."],
+    green: ["No neurological findings. Continue routine activities and weekly neuro-ocular monitoring (OCT)."],
     yellow: [
-      "Evaluar con escala AVPU / Glasgow y examen neuro-ocular (OCT, fondo de ojo, tonometría).",
-      "Reposo en el saco de dormir sujeto y suspender tareas de precisión.",
-      "Hidratación oral 500 mL y analgesia (paracetamol 500 mg) según ISS Medical Checklist.",
-      "Reevaluar en 30 min; si empeora, escalar al Oficial Médico (CMO).",
+      "Assess using the AVPU / Glasgow scale and perform a neuro-ocular examination (OCT, funduscopy, tonometry).",
+      "Rest in a restrained sleeping bag and suspend precision tasks.",
+      "Administer 500 mL oral fluids and analgesia (acetaminophen 500 mg) per the ISS Medical Checklist.",
+      "Reassess in 30 minutes; escalate to the Flight Surgeon (CMO) if symptoms worsen.",
     ],
     red: [
-      "Activar emergencia neurológica: el CMO debe acudir junto al tripulante de inmediato.",
-      "Asegurar vía aérea y posición lateral de seguridad con sujeción en 0g.",
-      "Glucemia capilar, oxígeno 2–4 L/min y registro continuo de signos vitales.",
-      "Conferencia médica privada (PMC) con el Cirujano de Vuelo; valorar retorno de emergencia.",
+      "Activate the neurological emergency response; the CMO should attend the crewmember immediately.",
+      "Secure the airway and position the crewmember laterally with 0-g restraints.",
+      "Check capillary blood glucose, administer oxygen at 2–4 L/min, and continuously monitor vital signs.",
+      "Initiate a private medical conference (PMC) with the Flight Surgeon; consider emergency return.",
     ],
   },
   cardio: {
-    green: ["Ritmo estable. Mantener ejercicio ARED/T2 programado y telemetría estándar."],
+    green: ["Stable rhythm. Maintain scheduled ARED/T2 exercise and standard telemetry."],
     yellow: [
-      "ECG de 12 derivaciones con el CSA Bio-Monitor y conteo de PVCs.",
-      "Suspender ejercicio y reducir la tasa metabólica; si está en EVA, pausar la caminata.",
-      "Revisar electrolitos (K+, Mg2+) e hidratación.",
-      "Telemetría continua y reevaluación en 15 min.",
+      "Obtain a 12-lead ECG using the CSA Bio-Monitor and quantify PVCs.",
+      "Stop exercise and reduce metabolic demand; if on EVA, pause the spacewalk.",
+      "Assess electrolytes (K+, Mg2+) and hydration.",
+      "Continue telemetry and reassess in 15 minutes.",
     ],
     red: [
-      "Activar protocolo ACLS a bordo: preparar desfibrilador (AED) y kit cardíaco.",
-      "Aspirina 325 mg masticable si hay dolor torácico y no hay contraindicación.",
-      "Oxígeno suplementario y monitorización ECG continua.",
-      "Notificar al Cirujano de Vuelo (MCC) de inmediato; evaluar regreso de emergencia.",
+      "Activate the onboard ACLS protocol; prepare the automated external defibrillator (AED) and cardiac kit.",
+      "Administer chewable aspirin 325 mg for chest pain if not contraindicated.",
+      "Administer supplemental oxygen and maintain continuous ECG monitoring.",
+      "Notify the Flight Surgeon (MCC) immediately; assess the need for emergency return.",
     ],
   },
   resp: {
-    green: ["Respiración normal. Mantener ppCO2 de cabina < 2.0 mmHg (ECLSS)."],
+    green: ["Normal breathing. Maintain cabin ppCO2 below 2.0 mmHg (ECLSS)."],
     yellow: [
-      "Medir SpO2 y frecuencia respiratoria; verificar ppCO2 de cabina (ECLSS).",
-      "Reducir el esfuerzo y aumentar la ventilación del módulo.",
-      "Si está en EVA: verificar O2 y depurador de CO2 del traje (EMU).",
-      "Reevaluar en 10 min.",
+      "Measure SpO2 and respiratory rate; verify cabin ppCO2 (ECLSS).",
+      "Reduce exertion and increase module ventilation.",
+      "If on EVA, verify suit O2 and the EMU CO2 scrubber.",
+      "Reassess in 10 minutes.",
     ],
     red: [
-      "Oxígeno al 100 % por mascarilla de inmediato.",
-      "Si está en EVA: abortar la caminata y regresar a la esclusa.",
-      "Descartar neumotórax o descompresión: revisar presión de cabina.",
-      "Notificar al Cirujano de Vuelo y preparar ventilación asistida (Ambu).",
+      "Administer 100% oxygen by mask immediately.",
+      "If on EVA, terminate the spacewalk and return to the airlock.",
+      "Assess for pneumothorax or decompression illness; check cabin pressure.",
+      "Notify the Flight Surgeon and prepare assisted ventilation (bag-valve mask).",
     ],
   },
 };
@@ -257,9 +258,9 @@ export const RECOMMENDATIONS: Record<TriageSystem, Record<TriageLevel, string[]>
 /* ------------------------------------------------------------------ */
 
 export const SIM_ALERTS: Record<TriageSystem, SystemAssessment> = {
-  neuro: { level: "red", finding: "Confusión y cefalea intensa referidas" },
-  cardio: { level: "red", finding: "Dolor torácico opresivo + PVCs" },
-  resp: { level: "yellow", finding: "Disnea leve · FR 26/min" },
+  neuro: { level: "red", finding: "Reported confusion and severe headache" },
+  cardio: { level: "red", finding: "Pressure-like chest pain + PVCs" },
+  resp: { level: "yellow", finding: "Mild dyspnea · RR 26/min" },
 };
 
 /* ------------------------------------------------------------------ */
@@ -273,15 +274,15 @@ export function worstLevel(state: TriageState): TriageLevel {
 export function diagnosisSummary(state: TriageState): string {
   const affected = TRIAGE_SYSTEMS.filter((s) => state[s].level !== "green");
   if (affected.length === 0) {
-    return "Diagnóstico preliminar: los tres sistemas están en verde. No detecto signos de alarma. Continúa tu rutina; volveré a evaluarte en el próximo control.";
+    return "Preliminary assessment: all three systems are nominal. No warning signs detected. Continue your routine; I will reassess you at the next check.";
   }
   const parts = affected.map(
-    (s) => `${TRIAGE_META[s].title} en ${state[s].level === "red" ? "rojo" : "amarillo"}, por ${state[s].finding.toLowerCase()}`,
+    (s) => `${TRIAGE_META[s].title} ${state[s].level === "red" ? "critical" : "caution"}: ${state[s].finding.toLowerCase()}`,
   );
   const worst = worstLevel(state);
   const top = [...affected].sort((a, b) => TRIAGE_RANK[state[b].level] - TRIAGE_RANK[state[a].level])[0] ?? "neuro";
   const first = RECOMMENDATIONS[top][worst][0] ?? "";
-  return `Diagnóstico preliminar: ${parts.join("; ")}. ${worst === "red" ? "Es urgente." : "Requiere vigilancia."} Primera acción: ${first} Revisa la consola de notificaciones para el protocolo completo.`;
+  return `Preliminary assessment: ${parts.join("; ")}. ${worst === "red" ? "This is urgent." : "Monitoring is required."} First action: ${first} See the notification console for the complete protocol.`;
 }
 
 export interface TranscriptEntry {
@@ -309,34 +310,34 @@ export function buildReport(opts: {
   const { state, transcript, history, now } = opts;
   const t = (iso: string) => new Date(iso).toISOString().slice(11, 19);
   const lines: string[] = [];
-  lines.push("REPORTE CLÍNICO · ASTRA Health HMI");
+  lines.push("CLINICAL REPORT · ASTRA Health HMI");
   lines.push("=".repeat(44));
-  lines.push(`Fecha/hora (UTC): ${now.toISOString().replace("T", " ").slice(0, 19)}`);
-  if (opts.mission) lines.push(`Misión: ${opts.mission}`);
-  lines.push(`Estado global: ${LEVEL_NAME[worstLevel(state)]}`);
+  lines.push(`Date/time (UTC): ${now.toISOString().replace("T", " ").slice(0, 19)}`);
+  if (opts.mission) lines.push(`Mission: ${opts.mission}`);
+  lines.push(`Overall status: ${LEVEL_NAME[worstLevel(state)]}`);
   lines.push("");
-  lines.push("ESTADO DE LOS SISTEMAS");
+  lines.push("SYSTEM STATUS");
   for (const s of TRIAGE_SYSTEMS) {
     lines.push(`- ${TRIAGE_META[s].title}: ${LEVEL_NAME[state[s].level]} — ${state[s].finding}`);
   }
   lines.push("");
-  lines.push("HALLAZGOS");
+  lines.push("FINDINGS");
   const findings = history.filter((h) => h.level !== "green");
-  if (findings.length === 0) lines.push("- Sin hallazgos de alarma.");
+  if (findings.length === 0) lines.push("- No alert-level findings.");
   for (const h of findings) lines.push(`- [${t(h.at)}] ${TRIAGE_META[h.system].title} · ${LEVEL_NAME[h.level]} · ${h.finding} (${h.source})`);
   lines.push("");
-  lines.push("RECOMENDACIONES");
+  lines.push("RECOMMENDATIONS");
   for (const s of TRIAGE_SYSTEMS) {
     const lvl = state[s].level;
     lines.push(`${TRIAGE_META[s].title} (${LEVEL_NAME[lvl]}):`);
     for (const r of RECOMMENDATIONS[s][lvl]) lines.push(`  • ${r}`);
   }
   lines.push("");
-  lines.push("TRANSCRIPCIÓN DE LA CONSULTA");
-  if (transcript.length === 0) lines.push("- Sin consulta por voz registrada.");
-  for (const e of transcript) lines.push(`[${t(e.at)}] ${e.role === "ia" ? "IA" : "Tripulante"}: ${e.text}`);
+  lines.push("CONSULTATION TRANSCRIPT");
+  if (transcript.length === 0) lines.push("- No voice consultation recorded.");
+  for (const e of transcript) lines.push(`[${t(e.at)}] ${e.role === "ia" ? "ASTRA" : "Crewmember"}: ${e.text}`);
   lines.push("");
-  lines.push("Sugerencia no vinculante generada a bordo · decisión final del CMO / Cirujano de Vuelo.");
+  lines.push("Onboard decision support only · final decision rests with the CMO / Flight Surgeon.");
   return lines.join("\n");
 }
 
@@ -346,19 +347,19 @@ export function acknowledge(
   updates: Partial<TriageState>,
   merged: TriageState,
 ): string {
-  const word = (l: TriageLevel) => (l === "red" ? "rojo" : l === "yellow" ? "amarillo" : "verde");
+  const word = (l: TriageLevel) => (l === "red" ? "critical" : l === "yellow" ? "caution" : "nominal");
   const parts: string[] = [];
   if (focus) {
     const a = merged[focus];
     const title = TRIAGE_META[focus].title.toLowerCase();
-    if (!updates[focus]) parts.push(`Sin síntomas claros; mantengo el sistema ${title} en ${word(a.level)}.`);
-    else if (a.level === "green") parts.push(`Entendido, sistema ${title} en verde.`);
-    else parts.push(`Registro ${a.finding.toLowerCase()}: sistema ${title} en ${word(a.level)}.`);
+    if (!updates[focus]) parts.push(`No clear symptoms reported; the ${title} system remains ${word(a.level)}.`);
+    else if (a.level === "green") parts.push(`Understood. The ${title} system is nominal.`);
+    else parts.push(`Recorded ${a.finding.toLowerCase()}: ${title} system is ${word(a.level)}.`);
   }
   for (const s of TRIAGE_SYSTEMS) {
     if (s === focus) continue;
     const u = updates[s];
-    if (u && u.level !== "green") parts.push(`También anoto ${u.finding.toLowerCase()}: ${TRIAGE_META[s].title.toLowerCase()} en ${word(u.level)}.`);
+    if (u && u.level !== "green") parts.push(`Also noted ${u.finding.toLowerCase()}: ${TRIAGE_META[s].title.toLowerCase()} system is ${word(u.level)}.`);
   }
   return parts.join(" ");
 }

@@ -14,11 +14,11 @@ describe("SensorNetworkTopology", () => {
       />,
     );
 
-    expect(screen.getByText("Todos operativos")).toBeInTheDocument();
+    expect(screen.getByText("All Operational")).toBeInTheDocument();
     expect(screen.getByText("85%")).toBeInTheDocument();
-    expect(screen.getByText("4/4 conectados")).toBeInTheDocument();
+    expect(screen.getByText("4/4 Connected")).toBeInTheDocument();
 
-    const scenarioSelector = screen.getByRole("group", { name: "Escenarios de red biomédica" });
+    const scenarioSelector = screen.getByRole("group", { name: "Biomedical Network Scenarios" });
     expect(within(scenarioSelector).getAllByRole("button")).toHaveLength(3);
     for (const scenario of SENSOR_NETWORK_SCENARIOS) {
       expect(
@@ -27,19 +27,19 @@ describe("SensorNetworkTopology", () => {
     }
 
     const selectedController = screen.getByRole("article", {
-      name: "Controlador 02, Escenario 02, Red del Traje",
+      name: "Controller 02, Scenario 02, Suit Network",
     });
     expect(within(selectedController).getByText("89%")).toBeInTheDocument();
     expect(within(selectedController).getByText("ON")).toBeInTheDocument();
-    expect(within(selectedController).getByText("Conectado")).toBeInTheDocument();
+    expect(within(selectedController).getByText("Connected")).toBeInTheDocument();
 
     const standbyController = screen.getByRole("article", {
-      name: "Controlador 01, Escenario 01, Red Corporal",
+      name: "Controller 01, Scenario 01, Body Area Network",
     });
     expect(within(standbyController).getByText("OFF")).toBeInTheDocument();
-    expect(within(standbyController).getByText("En espera")).toBeInTheDocument();
+    expect(within(standbyController).getByText("Standby")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /Centro de análisis/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Scenario 03: Analysis Center/ }));
     expect(onScenarioChange).toHaveBeenCalledWith("analysis");
   });
 });

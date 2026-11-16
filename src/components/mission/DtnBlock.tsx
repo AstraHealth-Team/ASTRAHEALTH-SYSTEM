@@ -9,17 +9,17 @@ export function DtnBlock({ sim }: { sim: MissionSim }) {
   return (
     <BlockFrame block="dtn" aside={<span className="telemetry text-[0.7rem] text-muted-foreground">BPv7 · RFC 9171</span>}>
       <div className="grid grid-cols-[1fr_auto_1fr] items-stretch gap-2">
-        <Node title="Gateway A Bordo" sub="CCSDS Space Packet">
+        <Node title="Onboard Gateway" sub="CCSDS Space Packet">
           <p className="telemetry text-xs">
-            {dtn.generated.toLocaleString("es")} <span className="text-muted-foreground">bundles</span>
+            {dtn.generated.toLocaleString("en")} <span className="text-muted-foreground">bundles</span>
           </p>
         </Node>
         <div className="flex items-center text-dtn" aria-hidden>
           →
         </div>
-        <Node title="Cola Store-and-Forward" sub="(0s LEO -> 24m Marte)">
+        <Node title="Store-and-Forward Queue" sub="(0 s LEO → 24 min Mars)">
           <p className={cn("telemetry text-xs", dtn.queued > 0 ? "text-dtn" : "text-muted-foreground")}>
-            {dtn.queued.toLocaleString("es")} en custodia
+            {dtn.queued.toLocaleString("en")} queued for custody
           </p>
         </Node>
       </div>
@@ -27,13 +27,13 @@ export function DtnBlock({ sim }: { sim: MissionSim }) {
       <div className="mt-3 rounded-lg border border-hairline bg-background/40 p-3">
         <div className="flex items-center justify-between text-xs">
           <span className="flex items-center gap-1.5">
-            <Rocket className="size-4 text-dtn" /> Nave
+            <Rocket className="size-4 text-dtn" /> Spacecraft
           </span>
           <span className={cn("telemetry", cut ? "text-dtn" : "text-nominal")}>
-            {cut ? "LOS · enlace cortado" : `AOS · ${link.latencyLabel}`}
+            {cut ? "LOS · link unavailable" : `AOS · ${link.latencyLabel}`}
           </span>
           <span className="flex items-center gap-1.5">
-            Tierra <Earth className="size-4 text-sensors" />
+            Earth <Earth className="size-4 text-sensors" />
           </span>
         </div>
         <div className="relative mt-2 h-5">
@@ -54,13 +54,13 @@ export function DtnBlock({ sim }: { sim: MissionSim }) {
         </div>
         <div className="telemetry mt-2 grid grid-cols-3 gap-2 text-center text-[0.7rem] text-muted-foreground">
           <span>
-            <b className="block text-sm text-foreground">{dtn.delivered.toLocaleString("es")}</b>entregados
+            <b className="block text-sm text-foreground">{dtn.delivered.toLocaleString("en")}</b>delivered
           </span>
           <span>
-            <b className="block text-sm text-foreground">{dtn.inFlight}</b>en vuelo
+            <b className="block text-sm text-foreground">{dtn.inFlight}</b>in flight
           </span>
           <span>
-            <b className={cn("block text-sm", dtn.queued ? "text-dtn" : "text-foreground")}>{dtn.queued.toLocaleString("es")}</b>en cola
+            <b className={cn("block text-sm", dtn.queued ? "text-dtn" : "text-foreground")}>{dtn.queued.toLocaleString("en")}</b>queued
           </span>
         </div>
       </div>

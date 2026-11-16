@@ -6,20 +6,20 @@ import { trendSeries, type ScenarioId, type TrendRange } from "@/lib/mission";
 import { Panel } from "./kit";
 
 const RANGES: { id: TrendRange; label: string }[] = [
-  { id: "1h", label: "1 Hora" },
-  { id: "24h", label: "24 Horas" },
-  { id: "30d", label: "30 Días" },
+  { id: "1h", label: "1 Hour" },
+  { id: "24h", label: "24 Hours" },
+  { id: "30d", label: "30 Days" },
 ];
 
 const METRICS = [
-  { key: "hr", label: "Frecuencia cardíaca (bpm)", color: "var(--sensors)", axis: "hr" },
-  { key: "rnfl", label: "Espesor retiniano SANS (RNFL, µm)", color: "var(--edge)", axis: "rnfl" },
-  { key: "dose", label: "Dosis de radiación acumulada (mSv)", color: "var(--hmi)", axis: "dose" },
+  { key: "hr", label: "Heart Rate (bpm)", color: "var(--sensors)", axis: "hr" },
+  { key: "rnfl", label: "SANS Retinal Nerve Fiber Layer (RNFL, µm)", color: "var(--edge)", axis: "rnfl" },
+  { key: "dose", label: "Cumulative Radiation Dose (mSv)", color: "var(--hmi)", axis: "dose" },
 ] as const;
 
 type MetricKey = (typeof METRICS)[number]["key"];
 
-export function TrendPanel({ scenario, title = "Tendencias" }: { scenario: ScenarioId; title?: string }) {
+export function TrendPanel({ scenario, title = "Trends" }: { scenario: ScenarioId; title?: string }) {
   const [range, setRange] = useState<TrendRange>("24h");
   const [visibleMetrics, setVisibleMetrics] = useState<MetricKey[]>(() => METRICS.map(({ key }) => key));
   const data = useMemo(() => trendSeries(range, scenario), [range, scenario]);
@@ -28,7 +28,7 @@ export function TrendPanel({ scenario, title = "Tendencias" }: { scenario: Scena
       title={title}
       icon={<LineIcon className="size-3.5 text-hmi" />}
       aside={
-        <div className="flex gap-1 rounded-lg bg-muted/60 p-0.5" role="tablist" aria-label="Rango temporal">
+        <div className="flex gap-1 rounded-lg bg-muted/60 p-0.5" role="tablist" aria-label="Time range">
           {RANGES.map((r) => (
             <button
               key={r.id}
@@ -72,7 +72,7 @@ export function TrendPanel({ scenario, title = "Tendencias" }: { scenario: Scena
           </button>
         ))}
       </div>
-      <p className="mb-1 text-[0.68rem] text-muted-foreground">Escalas independientes: bpm · µm · mSv</p>
+      <p className="mb-1 text-[0.68rem] text-muted-foreground">Independent scales: bpm · µm · mSv</p>
       <div className="h-60">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 6, right: 8, bottom: 0, left: -18 }}>

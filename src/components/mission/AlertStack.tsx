@@ -38,7 +38,7 @@ export function AlertStack({
     const url = URL.createObjectURL(new Blob([report], { type: "text/plain;charset=utf-8" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `reporte-clinico-astra-${new Date().toISOString().slice(0, 10)}.txt`;
+    link.download = `astra-clinical-report-${new Date().toISOString().slice(0, 10)}.txt`;
     link.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
@@ -72,16 +72,16 @@ export function AlertStack({
       {suppressed.length > 0 && (
         <p className="flex items-center gap-2 rounded-md border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
           <BellOff className="size-3.5" />
-          {suppressed.length} alerta(s) Caution/Advisory silenciadas ·{" "}
-          {criticalPhase ? "Fase Crítica activa" : "Emergencia en curso"}
+          {suppressed.length} Caution/Advisory alert(s) suppressed ·{" "}
+          {criticalPhase ? "Critical phase active" : "Emergency in progress"}
         </p>
       )}
 
-      <section className="panel grid gap-4 p-4" aria-label="Consola clínica de notificaciones">
+      <section className="panel grid gap-4 p-4" aria-label="Clinical notification console">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="label-caps flex items-center gap-2 text-foreground">
             <Stethoscope className="size-4 text-hmi" />
-            CONSOLA – MODO NOTIFICACIONES
+            NOTIFICATION CONSOLE
           </h2>
           <button
             type="button"
@@ -89,7 +89,7 @@ export function AlertStack({
             className="flex min-h-10 items-center gap-2 rounded-lg border border-hmi/50 bg-hmi/10 px-3 text-xs font-semibold text-hmi transition-colors hover:bg-hmi/20"
           >
             <Download className="size-4" />
-            Generar Reporte Clínico
+            Generate Clinical Report
           </button>
         </header>
 
@@ -123,7 +123,7 @@ export function AlertStack({
                   onClick={() => triage.simulate(system)}
                   className="mt-2 min-h-9 w-full rounded-md border border-border bg-background/40 px-2 text-xs font-medium hover:border-hmi/50 hover:text-hmi"
                 >
-                  Probar {TRIAGE_META[system].title}
+                  Simulate {TRIAGE_META[system].title}
                 </button>
               </article>
             );
@@ -133,7 +133,7 @@ export function AlertStack({
         <div className="grid gap-4 lg:grid-cols-2">
           <div>
             <h3 className="label-caps mb-2 text-muted-foreground">
-              Recomendaciones clínicas activas
+              Active Clinical Recommendations
             </h3>
             <div className="grid gap-2">
               {SYSTEMS.map((system) => {
@@ -159,8 +159,8 @@ export function AlertStack({
 
           <div className="grid content-start gap-3">
             <p className="text-[0.68rem] leading-relaxed text-muted-foreground">
-              Reporte descargable con fecha/hora, estado por sistema, recomendaciones, historial y
-              transcripción de la consulta.
+              Downloadable report with date/time, system status, recommendations, change history,
+              and consultation transcript.
             </p>
           </div>
         </div>
